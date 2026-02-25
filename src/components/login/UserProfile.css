@@ -1,0 +1,252 @@
+/* UserProfile.css */
+
+/* Base layout */
+.profile {
+  --bg: #fff;
+  --surface: #fff;
+  --surface-2: #fff;
+  --text: #000;
+  --text-muted: #000;
+  --primary: #7c3aed; 
+  --primary-2: #63e;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --border: #22242c;
+  --card-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  --radius: 14px;
+
+  min-height: calc(100vh - 64px);
+  padding: 32px 24px;
+  /* background: radial-gradient(1200px 400px at 40% -10%, rgba(124, 58, 237, 0.08), transparent 58%),
+              radial-gradient(900px 450px at 95% -5%, rgba(39, 197, 228, 0.08), transparent 55%),
+              var(--bg); */
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+/* Container */
+.profile__container {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* Header */
+.profile__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  
+}
+
+.profile__title {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: #63e;
+}
+
+.profile__subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Grid */
+.profile__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 860px) {
+  .profile__grid {
+    grid-template-columns: 1.25fr 0.9fr;
+  }
+}
+
+/* Card */
+.profile__card {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 18px;
+}
+
+.profile__card--accent {
+  border: 1px solid rgba(124, 58, 237, 0.4);
+}
+
+/* Section title */
+.profile__sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  margin-bottom: 10px;
+  color: #63e
+}
+
+.profile__sectionTitle .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  text-align: center;
+  background: var(--primary); 
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+}
+
+/* Definition rows */
+.profile__row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+
+.profile__row:last-child {
+  border-bottom: 0;
+}
+
+.profile__label {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.profile__value {
+  color: #000;
+  font-weight: 600;
+}
+
+/* Pills and lists */
+.profile__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #63e;
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  color: #e9eaf6;
+  font-size: 12px;
+  margin: 4px 8px 4px 0;
+}
+
+.profile__pill .bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+/* Last payment details */
+.profile__details {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.profile__details code,
+.profile__details pre {
+  color: #d1d5db;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+/* Buttons */
+.profile__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #63e;
+  color:#ffffff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+  background: #63e;
+}
+
+.btn--primary {
+  background: #63e;
+  color: #fff;
+  border: 1px solid rgba(124, 58, 237, 0.6);
+}
+
+.btn--danger {
+  background: #63e;
+  border: 1px solid rgba(239, 68, 68, 0.55);
+}
+
+/* Helper states */
+.profile__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(4, 208, 79, 0.272);
+  border: 1px solid rgb(6, 105, 42);
+  color: #000000;
+  font-size: 15px;
+}
+
+.profile__mute {
+  color: #fff;
+}
+
+/* Responsive tweaks */
+@media (max-width: 520px) {
+  .profile__row {
+    grid-template-columns: 1fr;
+  }
+  .profile__actions {
+    flex-direction: column;
+  }
+}
+
+/* Subtle animation */
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.profile__card {
+  animation: floatIn 220ms ease both;
+}
+/* Center the identity card */
+.profile__grid {
+  display: flex;              /* use flexbox instead of grid */
+  justify-content: center;    /* center horizontally */
+  align-items: center;        /* center vertically if you want */
+  min-height: 60vh;           /* give some height so vertical centering works */
+}
+
+/* Optional: limit the card width so it doesn’t stretch too wide */
+.profile__card {
+  max-width: 500px;
+  width: 100%;
+}

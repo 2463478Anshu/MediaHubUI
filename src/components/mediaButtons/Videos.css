@@ -1,0 +1,88 @@
+/* ========== Videos Page Container ========== */
+.videos-page {
+  padding: 20px;
+  background-color: transparent;
+  flex: auto;
+}
+
+.videos-page h1 {
+  color: #000;
+  font-size: 2rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* ========== Make Videos Horizontal Like Podcasts ========== */
+/* Switch from CSS Grid to Flex Row + Wrap */
+.videos-grid {
+  display: flex;             /* was: grid */
+  flex-wrap: wrap;           /* allow wrapping to next row */
+  gap: 16px;                 /* consistent spacing between cards (same as Podcast) */
+  justify-content: flex-start;
+  align-items: stretch;      /* cards line up nicely even if content heights differ */
+}
+
+/* Each card behaves like Podcast's .episode-card (width ~300px) */
+.video-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  display: flex;             /* ensure vertical stacking inside the card */
+  flex-direction: column;
+  align-items: center;
+
+  width: 300px;              /* fixed card width to match podcast’s visual rhythm */
+  /* Optional: prevent growth beyond width when long titles exist */
+  flex: 0 0 auto;
+}
+
+.video-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+/* Keep video media consistent */
+.video-card video {
+  width: 100%;
+  height: 180px;             /* aligns with .episode-cover 180px for parity */
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Title and meta */
+.video-card h2 {
+  font-size: 16px;
+  margin: 12px 0 8px;
+  text-align: center;
+  color: #333;
+}
+
+.video-card .author,
+.video-card .excerpt {
+  font-size: 14px;
+  color: #666;
+  margin: 4px 0;
+}
+
+/* Premium badge (kept as-is, matches Podcast) */
+.premium-badge {
+  display: inline-block;
+  background: #FEF08A;         /* amber-200 */
+  color: #92400E;               /* amber-800 */
+  border: 1px solid #FDE68A;    /* amber-300 */
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+/* ========== Responsive tweak (optional) ========== */
+@media (max-width: 640px) {
+  .video-card {
+    width: 100%;               /* stack one per row on small screens */
+  }
+}

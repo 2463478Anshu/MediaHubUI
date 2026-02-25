@@ -1,0 +1,251 @@
+/* PAGE LAYOUT --------------------------------------------------- */
+.video-page-root {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: #f9f9f9;
+  padding: 20px 0;
+}
+
+.video-wrapper {
+  width: 95%;
+  max-width: 1600px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+/* LEFT SIDE : MAIN VIDEO AREA ---------------------------------- */
+.video-main {
+  flex: 3.2;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.video-player {
+  width: 100%;
+  border-radius: 10px;
+  background: #000;
+}
+
+.video-title {
+  margin-top: 14px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #0f0f0f;
+}
+
+.video-category,
+.video-date {
+  color: #606060;
+  margin-top: 4px;
+}
+
+
+/* ENGAGEMENT BUTTONS -------------------------------------------- */
+.video-engagement {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.video-engagement button {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.video-engagement button:hover {
+  background: #e5e5e5;
+}
+
+/* SUBSCRIBE BUTTON STYLE LIKE YOUTUBE */
+.video-subscribe-btn {
+  background: #cc0000 !important;
+  color: #fff;
+}
+.video-subscribed-btn {
+  background: #e3e3e3 !important;
+  color: #111;
+}
+
+/* COMMENTS ------------------------------------------------------- */
+.video-comments {
+  margin-top: 28px;
+}
+
+.comments-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.comment-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.comment-post-btn {
+  background: #3b76f6;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.comment-post-btn:hover {
+  background: #2f63d2;
+}
+
+.comments-list .comment-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.comment-avatar {
+  font-size: 1.4rem;
+}
+
+.comment-text {
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+/* RIGHT SIDE : RELATED VIDEOS ----------------------------------- */
+.video-next {
+  flex: 1.4;
+  position: sticky;
+  top: 0;
+}
+
+.next-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+/* Vertical stacked list like YouTube */
+.next-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.next-card {
+  display: flex;
+  gap: 12px;
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  transition: 0.2s ease;
+}
+
+.next-card:hover {
+  background: #f1f1f1;
+}
+
+.next-link {
+  display: flex;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.next-video {
+  width: 160px;
+  height: 90px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #000;
+}
+
+.next-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0f0f0f;
+  line-height: 1.2;
+}
+
+/* RESPONSIVE ----------------------------------------------------- */
+@media (max-width: 992px) {
+  .video-wrapper {
+    flex-direction: column;
+  }
+  .video-next {
+    width: 100%;
+  }
+  .next-video {
+    width: 140px;
+    height: 80px;
+  }
+}
+
+/* ===== Creator + Like row (shared look) ===== */
+.creator-like-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.creator-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.creator-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.creator-name { font-weight: 600; color: #0f0f0f; }
+.creator-subs { color: #606060; }
+.content-line {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  color: #606060;
+}
+.badge {
+  background: #f1f1f1;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+}
+.muted { color: #606060; font-size: 0.95rem; }
+.like-only-right { margin-left: auto; }
+.like-only-right .video-like-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  border: none;
+  cursor: pointer;
+}
+.like-only-right .video-like-btn:hover { background: #e5e5e5; }
+
+@media (max-width: 768px) {
+  .creator-like-row { flex-direction: column; align-items: stretch; }
+  .like-only-right { align-self: flex-end; }
+}

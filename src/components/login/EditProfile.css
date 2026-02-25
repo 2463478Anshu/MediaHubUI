@@ -1,0 +1,158 @@
+/* EditProfile.css */
+
+.edit-profile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+.edit-profile__title {
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: #63e;
+    text-align: center;
+    margin-bottom: 30px;
+    margin-top: 0;
+}
+
+.edit-profile__container {
+    position: relative;           /* ⬅️ so the × button can anchor */
+    width: 500px;
+    padding: 30px;
+    padding-top: 56px;            /* ⬅️ room for the × button (mirrors login) */
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    background-color: #fff;
+    margin: 20px;
+}
+
+.edit-profile__form {
+    display: flex;
+    flex-direction: column;
+}
+
+.edit-profile__group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.edit-profile__label {
+    flex-shrink: 0;
+    width: 120px;
+    text-align: right;
+    color: #555;
+    font-weight: bold;
+}
+
+.edit-profile__input {
+    width: 100%;
+    padding: 12px 14px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.edit-profile__input:focus {
+    border-color: #7c3aed;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.edit-profile__actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.edit-profile__button {
+    width: 60%;
+    padding: 12px;
+    background-color: rgb(121, 74, 250);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.edit-profile__button:hover {
+    background-color: #5a2ca8;
+}
+
+/* Optional helpers for info/error/loading */
+.edit-profile__info {
+    margin-bottom: 10px;
+    color: #374151;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.edit-profile__error {
+    margin-bottom: 10px;
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.edit-profile__loading {
+    text-align: center;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+/* ⬇⬇ Same close button look as Login’s .signup-close-btn */
+.signup-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #f3f3f6;
+  color: #333;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 0;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+.signup-close-btn:hover {
+  background: #6c5ce7;   /* theme purple */
+  color: #fff;
+  transform: scale(1.08);
+}
+
+/* Responsive tweak */
+@media (max-width: 560px) {
+  .edit-profile__container {
+    width: 100%;
+    margin: 16px;
+  }
+  .edit-profile__label {
+    width: 100px;
+  }
+  .edit-profile__button {
+    width: 100%;
+  }
+}

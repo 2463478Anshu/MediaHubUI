@@ -1,0 +1,92 @@
+body {
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+}
+
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.signup-form {
+  position: relative;   /* anchor for close button */
+  text-align: center;
+  width: 300px;
+  padding: 20px;
+  padding-top: 48px;    /* extra top space for × button */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background-color: #fff;
+}
+
+/* Inputs */
+.signup-form input,
+.signup-form select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0; 
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+  color: #000;   /* ✅ force black text always */
+}
+
+/* Label above dropdown */
+.form-label {
+  display: block;
+  text-align: left;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  color: #555;
+  margin-top: 8px;
+}
+
+/* Signup button */
+.signup-btn {
+  width: 50%;
+  padding: 10px;
+  margin-top: 15px;
+  background-color: rgb(121, 74, 250);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+.signup-btn:hover {
+  background-color: #333;
+}
+
+/* Close button styling */
+.signup-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #f3f3f6;
+  color: #333;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 0;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+.signup-close-btn:hover {
+  background: #6c5ce7;   /* theme purple */
+  color: white;
+  transform: scale(1.08);
+}

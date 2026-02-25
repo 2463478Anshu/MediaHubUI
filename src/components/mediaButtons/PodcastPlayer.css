@@ -1,0 +1,225 @@
+/* ================= PODCAST AS YOUTUBE-LIKE USING EXISTING CLASS NAMES ================= */
+
+/* PAGE SHELL (mirrors .video-page-root/.video-wrapper) */
+.podcast-page-root {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: #f9f9f9;
+  padding: 20px 0;
+}
+.podcast-wrapper {
+  width: 95%;
+  max-width: 1600px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+/* LEFT: map your .player-fullpage to the video "main" look */
+.podcast-main {
+  flex: 3.2;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* Apply the .podcast-main visuals to your current root */
+.podcast-main .player-fullpage,
+.player-fullpage {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  display: block; /* ensure normal block flow inside main */
+}
+
+/* AUDIO like the video player block */
+.player-audio {
+  width: 100%;
+  border-radius: 10px;
+  background: #000;
+  display: block;
+}
+
+/* INFO/TITLE like video */
+.player-info h2,
+.player-title {
+  margin-top: 14px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #0f0f0f;
+}
+.player-info p,
+.player-description,
+.player-tags,
+.player-date {
+  color: #202020;
+  margin-top: 8px;
+}
+
+/* ENGAGEMENT buttons (mirror .video-engagement) */
+.engagement {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.engagement button,
+.engagement .btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  border: none;
+  cursor: pointer;
+  color: #111;
+  transition: background 0.2s ease;
+}
+.engagement button:hover,
+.engagement .btn:hover {
+  background: #e5e5e5;
+}
+/* subscribe styles, keep your class names */
+.subscribe-btn {
+  background: #cc0000 !important;
+  color: #fff !important;
+}
+.subscribed-btn {
+  background: #e3e3e3 !important;
+  color: #111 !important;
+}
+
+/* COMMENTS like video-comments */
+.comments-section {
+  margin-top: 28px;
+}
+.comments-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.comment-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.comment-form input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.comment-form button {
+  background: #3b76f6;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.comment-form button:hover {
+  background: #2f63d2;
+}
+.comments-list .comment-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.comment-avatar {
+  font-size: 1.4rem;
+}
+.comment-text {
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+/* RIGHT sidebar (similar to .video-next) */
+.podcast-next {
+  flex: 1.4;
+  position: sticky;
+  top: 0;
+}
+.podcast-next .next-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.podcast-next .next-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.podcast-next .next-card {
+  display: flex;
+  gap: 12px;
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+  transition: background 0.2s ease;
+}
+.podcast-next .next-card:hover {
+  background: #f1f1f1;
+}
+.podcast-next .next-link {
+  display: flex;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+.podcast-next .next-cover {
+  width: 90px;
+  height: 90px; /* square podcast cover */
+  border-radius: 8px;
+  object-fit: cover;
+  background: #000;
+}
+.podcast-next .next-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0f0f0f;
+  line-height: 1.2;
+}
+
+/* NOT FOUND */
+.not-found {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 1.2rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+  .podcast-wrapper {
+    flex-direction: column;
+  }
+  .podcast-next {
+    width: 100%;
+    position: static;
+  }
+  .podcast-next .next-cover {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* OPTIONAL: stacked order inside the main column */
+.player-fullpage:has(.player-audio) {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "audio"
+    "info"
+    "engage"
+    "comments";
+  gap: 12px;
+}
+.player-audio         { grid-area: audio; }
+.player-info          { grid-area: info; }
+.engagement           { grid-area: engage; }
+.comments-section     { grid-area: comments; }

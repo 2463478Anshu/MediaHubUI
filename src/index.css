@@ -1,0 +1,132 @@
+:root {
+  
+  /* --app-header-height: 64px; or 56px, 80px, etc. */
+
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  /* font-weight: 400; */
+
+  color-scheme: light dark;
+  color: #63e;
+  margin: 0;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  width: 110%;
+  height: 100%;
+  background: white;
+  background: radial-gradient(125% 125% at 50% 10%, #fff 40%, #63e 100%);
+  z-index: -10;
+}
+
+
+
+a {
+  font-weight: 500;
+  color: #63e;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #63e;
+}
+
+/* body {
+  margin: 0;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+} */
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  color: #63e;
+}
+
+h2 {
+  color: #63e;
+  font-size: 2rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #63e;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #63e;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* ======== GLOBAL SAFE FIXES (add at the bottom of index.css) ======== */
+
+/* Tell pages how tall your fixed top bar is. Adjust if needed. */
+:root {
+  --app-header-height: 72px;     /* try 64px or 80px if your header differs */
+}
+
+/* Always start page content below the fixed header */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* Reserve space for the fixed header (also respects iOS safe area) */
+  padding-top: calc(var(--app-header-height) + env(safe-area-inset-top, 0px));
+}
+
+/* Keep the decorative background from affecting layout/scroll */
+.background {
+  position: fixed;  /* instead of absolute */
+  inset: 0;
+  width: 100%;      /* avoid horizontal overflow */
+  height: 100%;
+  pointer-events: none;
+  z-index: -10;
+  background: radial-gradient(125% 125% at 50% 10%, #fff 40%, #63e 100%);
+}
+
+/* Remove accidental double spacing if specific pages add their own margins */
+.video-page-root,
+.video-wrapper {
+  margin-top: 0 !important;
+}
+
+/* If any container has overflow hidden at the top, relax it */
+.video-wrapper {
+  overflow: visible;
+}

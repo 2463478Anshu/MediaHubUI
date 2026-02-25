@@ -1,0 +1,182 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  padding: 10px 20px;
+  background:white;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,     /* subtle inner edge */
+    0 10px 25px rgba(0, 0, 0, 0.25),             /* depth */
+    0 2px 8px rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+  width: 100vw; 
+  height: 8vh;          
+  margin: 10;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.nav-left,
+.nav-center,
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-left {
+  flex: 0 0 auto; 
+}
+
+.nav-center {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.nav-right {
+  flex: 0 0 auto;
+  gap: 12px;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #fff;
+  margin-left: 50px;
+}
+
+.logo-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+ 
+}
+
+
+.search-form {
+  display: flex;
+  max-width: 700px;
+  width: 100%;
+  gap: 8px;
+}
+
+.search-input {
+  flex: 1 1 auto;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 0.95rem;
+}
+
+.search-btn {
+  padding: 8px 14px;
+  border: none;
+  color: #ffffff;
+  background-color: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.signin {   
+    background-color: rgb(121, 74, 250);
+    padding: 8px 14px;
+    border: none;
+    cursor: pointer;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+}
+
+.signin:hover {
+  color: #63e;
+  background-color: #fff;
+}
+
+.signup {
+  padding: 8px 14px;
+  border: 1px solid #ffffff;
+  background-color: transparent;
+  color: #63e;
+  
+  cursor: pointer;
+}
+
+.signup:hover {
+  color: #63e;
+  border: 1px solid #63e; 
+}
+
+/* Admin button: visible only for admin users */
+.admin-btn {
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.9);
+  background: rgba(99,102,241,0.12);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.admin-btn:hover {
+  background: #63e;
+  color: #0b1220;
+  transform: translateY(-2px);
+}
+
+/* Greeting text next to profile */
+.nav-greeting {
+  display: inline-block;
+  margin-right: 8px;
+  margin-left: 6px;
+  color:black;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .nav-greeting { display: none; }
+}
+
+
+
+.main-content {
+  position: absolute; 
+  top: 9vh;           
+  left: 65px;         
+  
+  width: calc(100vw - 70px);
+  height: calc(100vh - 9vh);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow-y: auto;
+
+  background: radial-gradient(120% 120% at 50% 10%, #fff 0%, #fff 35%, #63e 100%);
+}
+
+.main-content.login-page,
+.main-content.signup-page {
+  position: absolute; /* or relative, depending on layout */ 
+  top: auto; 
+  left: auto;
+  width: 100vw; 
+  height: 100vh; /* Keep the styling */ 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  overflow-y: auto; 
+  background: radial-gradient( 120% 120% at 50% 10%, #fff 0%, #fff 35%, #63e 100%);
+}
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+}

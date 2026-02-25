@@ -1,0 +1,257 @@
+/* Fallback (will be overwritten by JS measuring your nav in the component) */
+:root { --navbar-h: 64px; }
+
+/* Container */
+.article-viewer-root {
+  min-height: 100vh;
+  background: #f7f7fb;
+  /* Top padding now includes the navbar height to avoid overlap */
+  padding: calc(24px + var(--navbar-h, 0px)) 12px 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.viewer-wrapper {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  /* Make it 90% of the viewport width (robust against parent constraints) */
+  width: 90vw;
+  max-width: none; /* remove previous 1000px cap */
+  box-sizing: border-box;
+}
+
+/* Header */
+.article-title {
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  color: #5b35d5;
+}
+.article-subtitle {
+  color: #565a66;
+  margin: 0 0 4px 0;
+}
+.article-date {
+  color: #777b85;
+  font-size: 0.95rem;
+  margin: 0 0 12px 0;
+}
+
+/* Actions above viewer */
+.viewer-actions {
+  display: flex;
+  gap: 10px;
+  margin: 8px 0 12px;
+}
+.viewer-actions .btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Viewer */
+.viewer-box {
+  margin: 10px 0 18px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  background: #fafafa;
+}
+.viewer-iframe {
+  display: block;
+  width: 100%;
+  height: 68vh; /* comfortable height; adjust if needed */
+  border: none;
+}
+.viewer-content {
+  padding: 16px;
+  color: #1f1f2e;
+}
+
+/* Fullscreen styles for the container and iframe */
+.viewer-box:fullscreen {
+  background: #000;
+  border: none;
+  width: 100vw;
+  height: 100vh;
+}
+.viewer-box:fullscreen .viewer-iframe {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Safari prefix (older versions) */
+.viewer-box:-webkit-full-screen {
+  background: #000;
+  border: none;
+  width: 100vw;
+  height: 100vh;
+}
+.viewer-box:-webkit-full-screen .viewer-iframe {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Creator bar */
+.creator-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(99, 62, 230, 0.06);
+  border: 1px solid rgba(99, 62, 230, 0.16);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 10px 0 14px;
+}
+.creator-info {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  color: #3b3b4a;
+}
+.creator-label {
+  font-weight: 700;
+  color: #5b35d5;
+}
+.creator-name {
+  font-weight: 700;
+}
+.creator-subs {
+  color: #777b85;
+}
+.btn-subscribe {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(121, 74, 250, 0.3);
+  background: #5b35d5;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+.btn-subscribe:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(99,62,230,0.2);
+}
+.btn-subscribe.subscribed {
+  background: #10b981; /* green */
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Engagement row */
+.engagement-row {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0 18px;
+}
+.btn-like {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Comments */
+.comments-section {
+  margin-top: 8px;
+}
+.comment-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.comment-form input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.comment-form button {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  background: #5b35d5;
+  color: white;
+  cursor: pointer;
+}
+.comment-form button:hover {
+  background: #6d46ee;
+}
+
+.comments-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.comment-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.comment-avatar {
+  font-size: 1.4rem;
+}
+.comment-text {
+  flex: 1;
+}
+.comment-date {
+  font-size: 12px;
+  color: #8a8fa3;
+  margin-top: 2px;
+}
+
+/* Anchor scroll targets won't hide under the fixed nav */
+h1, h2, h3, [id] {
+  scroll-margin-top: var(--navbar-h, 0px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .viewer-iframe {
+    height: 60vh;
+  }
+  .creator-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .engagement-row {
+    flex-direction: column;
+  }
+  .viewer-actions .btn[disabled],
+.viewer-actions .btn.btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.viewer-actions .hint {
+  color: #8a8fa3;
+  font-size: 0.9rem;
+  margin-left: 8px;
+}
+}
+
+
+.article-views {
+  font-size: 1rem;
+  color: #444;
+  margin-right: 12px;
+}
+
+.engagement-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
