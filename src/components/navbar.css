@@ -158,7 +158,7 @@
 
   overflow-y: auto;
 
-  background: radial-gradient(120% 120% at 50% 10%, #fff 0%, #fff 35%, #63e 100%);
+  /* background: radial-gradient(120% 120% at 50% 10%, #fff 0%, #fff 35%, #63e 100%); */
 }
 
 .main-content.login-page,

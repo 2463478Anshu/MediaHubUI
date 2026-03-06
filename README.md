@@ -1,19 +1,120 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+```
+MediaHub
+├─ eslint.config.js
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ public
+│  └─ vite.svg
+├─ README.md
+├─ src
+│  ├─ App.css
+│  ├─ App.jsx
+│  ├─ assets
+│  │  ├─ article.jpg
+│  │  ├─ article1.png
+│  │  ├─ Background.jpg
+│  │  ├─ landingPageBackground.webp
+│  │  ├─ Logo_landing.png
+│  │  ├─ Logo_nav.png
+│  │  ├─ podcast.webp
+│  │  ├─ podcast1.png
+│  │  ├─ react.svg
+│  │  ├─ video.mp4
+│  │  ├─ video.png
+│  │  └─ Videos_thumbnail
+│  │     ├─ cricket_thumbnail.jpg
+│  │     ├─ DIY_thumbnail.jpg
+│  │     ├─ python_thumbnail.png
+│  │     ├─ rich_thumbnail.jpg
+│  │     ├─ ST_thumbnail.jpg
+│  │     └─ webDev_thumbnail.jpg
+│  ├─ components
+│  │  ├─ authForm.jsx
+│  │  ├─ Footer.css
+│  │  ├─ Footer.jsx
+│  │  ├─ index.js
+│  │  ├─ LandingPage.css
+│  │  ├─ LandingPage.jsx
+│  │  ├─ login
+│  │  │  ├─ EditProfile.css
+│  │  │  ├─ editProfile.jsx
+│  │  │  ├─ ForgotPassword.css
+│  │  │  ├─ ForgotPassword.jsx
+│  │  │  ├─ login.css
+│  │  │  ├─ login.jsx
+│  │  │  ├─ signup.css
+│  │  │  ├─ signup.jsx
+│  │  │  ├─ UserProfile.css
+│  │  │  └─ userProfile.jsx
+│  │  ├─ mediaButtons
+│  │  │  ├─ articles.css
+│  │  │  ├─ articles.jsx
+│  │  │  ├─ ArticleViewerPage.css
+│  │  │  ├─ ArticleViewerPage.jsx
+│  │  │  ├─ podcast.css
+│  │  │  ├─ podcast.jsx
+│  │  │  ├─ PodcastPlayer.css
+│  │  │  ├─ PodcastPlayer.jsx
+│  │  │  ├─ videoPage.css
+│  │  │  ├─ videoPage.jsx
+│  │  │  ├─ Videos.css
+│  │  │  └─ Videos.jsx
+│  │  ├─ Modal.css
+│  │  ├─ Modal.jsx
+│  │  ├─ navbar.css
+│  │  ├─ navbar.jsx
+│  │  ├─ navbarUser.jsx
+│  │  ├─ PaymentPage.css
+│  │  ├─ PaymentPage.jsx
+│  │  ├─ publishing.css
+│  │  ├─ publishing.jsx
+│  │  ├─ SearchResults.css
+│  │  ├─ SearchResults.jsx
+│  │  ├─ sidebar.css
+│  │  ├─ sidebar.jsx
+│  │  ├─ Spinner.css
+│  │  ├─ Spinner.jsx
+│  │  ├─ Subscription.css
+│  │  ├─ Subscription.jsx
+│  │  ├─ Toast.css
+│  │  ├─ Toast.jsx
+│  │  └─ ToastStack.jsx
+│  ├─ config
+│  │  └─ constants.js
+│  ├─ context
+│  │  ├─ authContext.jsx
+│  │  └─ userContext.jsx
+│  ├─ hooks
+│  │  └─ admin
+│  │     └─ useAdminDashboardApi.js
+│  ├─ index.css
+│  ├─ main.jsx
+│  ├─ pages
+│  │  ├─ admin
+│  │  │  ├─ adminDashboard.css
+│  │  │  ├─ AdminDashboard.jsx
+│  │  │  ├─ components
+│  │  │  │  ├─ AnalyticsTab.jsx
+│  │  │  │  ├─ EngagementList.jsx
+│  │  │  │  ├─ FeedbackTab.jsx
+│  │  │  │  ├─ GrowthTab.jsx
+│  │  │  │  ├─ SummaryCards.jsx
+│  │  │  │  └─ TopContentGrid.jsx
+│  │  │  ├─ MediaLibrary.css
+│  │  │  └─ MediaLibrary.jsx
+│  │  └─ utils
+│  │     └─ adminUtils.js
+│  ├─ routes
+│  │  ├─ appRoutes.jsx
+│  │  └─ protectedRoutes.jsx
+│  ├─ services
+│  │  ├─ api.js
+│  │  └─ auth.js
+│  └─ styles
+│     ├─ components.css
+│     └─ globals.css
+└─ vite.config.js
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
+```

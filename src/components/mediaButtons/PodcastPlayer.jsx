@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams /*, Link*/ } from "react-router-dom";
 import "./PodcastPlayer.css";
 import { UserContext } from "../../context/userContext.jsx";
 import Modal from "../../components/Modal.jsx";
@@ -78,6 +78,31 @@ const isAdminUser = (u) => {
     roles.includes("administrator")
   );
 };
+
+/* ---------- Relative date formatter (YouTube-like: "13 years ago") ---------- */
+function formatRelativeDate(iso) {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d)) return "—";
+    const now = new Date();
+    const diff = Math.max(0, now - d);
+    const sec = Math.floor(diff / 1000);
+    const min = Math.floor(sec / 60);
+    const hr  = Math.floor(min / 60);
+    const day = Math.floor(hr / 24);
+    const mon = Math.floor(day / 30);
+    const yr  = Math.floor(day / 365);
+    const unit = (n, s) => `${n} ${s}${n !== 1 ? "s" : ""} ago`;
+    if (yr  >= 1) return unit(yr,  "year");
+    if (mon >= 1) return unit(mon, "month");
+    if (day >= 1) return unit(day, "day");
+    if (hr  >= 1) return unit(hr,  "hour");
+    if (min >= 1) return unit(min, "minute");
+    return unit(sec, "second");
+  } catch {
+    return "—";
+  }
+}
 
 export default function PodcastPlayer() {
   const { id } = useParams();
@@ -328,6 +353,9 @@ export default function PodcastPlayer() {
     return <p className="not-found">Podcast not found or loading...</p>;
   }
 
+  /* NEW: pull the cover image path (same as Podcast.jsx cards) */
+  const coverUrl = episode?.coverImagePath ? `${API_BASE}${episode.coverImagePath}` : "";
+
   return (
     <div className="podcast-page-root">
       <div className="podcast-wrapper">
@@ -338,6 +366,17 @@ export default function PodcastPlayer() {
               <p>Loading podcast...</p>
             ) : (
               <>
+                {/* COVER IMAGE — main media canvas (like YouTube video area) */}
+                {coverUrl && (
+                  <img
+                    src={coverUrl}
+                    alt={`${episode.title} cover`}
+                    className="player-cover"
+                    loading="eager"
+                  />
+                )}
+
+                {/* AUDIO CONTROL — sits below the cover, left aligned */}
                 {audioUrl ? (
                   <audio
                     key={audioUrl}
@@ -357,21 +396,48 @@ export default function PodcastPlayer() {
               </>
             )}
 
+            {/* INFO: Title above uploader row (YouTube-like) */}
             <div className="player-info">
               <h2>{episode.title}</h2>
-              <p className="episode-meta">{Number(views || 0).toLocaleString()} views</p>
-              {episode.description && <p>{episode.description}</p>}
+
+              <div className="uploader-row">
+                <div className="uploader-avatar" aria-hidden="true">🎧</div>
+                <div className="uploader-meta">
+                  <div className="uploader-name">
+                    {episode.createdBy || episode.uploaderName || "Creator"}
+                  </div>
+                  {/* <div className="uploader-subs">7.04M subscribers</div> */}
+                </div>
+                <button
+                  onClick={handleSubscribe}
+                  className={subscribed ? "subscribed-btn uploader-sub-btn" : "subscribe-btn uploader-sub-btn"}
+                  type="button"
+                >
+                  {subscribed ? "Subscribed" : "Subscribe"}
+                </button>
+              </div>
+
+              <div className="watch-meta">
+                <span className="watch-views">{Number(views || 0).toLocaleString()} views</span>
+                {episode.createdAt && (
+                  <>
+                    <span className="dot-sep">•</span>
+                    <span
+                      className="watch-date"
+                      title={new Date(episode.createdAt).toLocaleString()}
+                    >
+                      {formatRelativeDate(episode.createdAt)}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {episode.description && <p className="player-description">{episode.description}</p>}
             </div>
 
             <div className="engagement">
               <button onClick={handleLike}>
                 {liked ? "💖" : "🤍"} Likes {likes}
-              </button>
-              <button
-                onClick={handleSubscribe}
-                className={subscribed ? "subscribed-btn" : "subscribe-btn"}
-              >
-                {subscribed ? "Subscribed" : "Subscribe"}
               </button>
             </div>
 
@@ -400,20 +466,7 @@ export default function PodcastPlayer() {
           </div>
         </main>
 
-        {/* RIGHT column: Next Episodes (placeholder)
-        <aside className="podcast-next">
-          <div className="next-title">Next Episodes</div>
-          <div className="next-grid">
-            <Link className="next-link next-card" to="/podcast/placeholder-1">
-              /placeholder-cover.png
-              <div className="next-label">Sample Episode Title</div>
-            </Link>
-            <Link className="next-link next-card" to="/podcast/placeholder-2">
-              /placeholder-cover.png
-              <div className="next-label">Another Interesting Topic</div>
-            </Link>
-          </div>
-        </aside> */}
+        {/* RIGHT column reserved for future “Next Episodes” if needed */}
       </div>
 
       {/* Admin-guard Modal */}

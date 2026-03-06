@@ -1,6 +1,3 @@
-
-/* ---------- Layout ---------- */
-
 .landing-root {
   min-height: 100vh;
   display: flex;
@@ -8,12 +5,16 @@
   justify-content: center;  /* center horizontally */
   padding: 2rem;
   overflow-x: hidden;
-
+ 
   /* Needed for overlay positioning */
-  position: relative;
+ 
   margin-top: 20vh;
+  width: 100vw;      /* avoid horizontal overflow */
+  height: 100vh;
+  z-index: -10;
+  background: radial-gradient( 120% 120% at 50% 10%, #fff 0%, #fff 35%, #63e 100%);
 }
-
+ 
 .landing-content {
   max-width: 900px;
   width: 100%;
@@ -21,7 +22,7 @@
   margin-bottom: 100px;
   margin: auto;
 }
-
+ 
 /* Hero block: logo + title + subtitle */
 .landing-hero {
   display: flex;
@@ -31,7 +32,7 @@
   margin-top: 10px;         /* distance from very top */
   margin-bottom: 60px;      /* distance before cards */
 }
-
+ 
 /* Logo image */
 .landing-logo {
   width: 150px;
@@ -40,7 +41,7 @@
   /* subtle glow to match purple theme (optional) */
   filter: drop-shadow(0 4px 16px rgba(116, 81, 219, 0.18));
 }
-
+ 
 /* Title & subtitle: no negative margins */
 .landing-title {
   font-weight: 700;
@@ -50,17 +51,17 @@
   overflow: hidden;
   border-right: 2px solid;
   white-space: nowrap;
-  animation: typing 4s steps(20, end); 
+  animation: typing 4s steps(20, end);
   /* blink-caret 2s step-end 6s; */
 }
-
+ 
 .landing-subtitle {
   color: #565a66;
   padding-top: 20px;
   font-size: 1.4rem;
   margin-bottom: -10px;           /* reset */
 }
-
+ 
 /* ---------- Cards ---------- */
 .card-row {
   display: flex;
@@ -70,7 +71,7 @@
   flex-wrap: wrap;
   margin-top: 24px;
 }
-
+ 
 /* ---------- Glass card base ---------- */
 .glass-card {
   position: relative;
@@ -78,32 +79,32 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
+ 
   width: 250px;
   height: 200px;
   padding: 16px;
   cursor: pointer;
-
+ 
   color: #63e;
   background: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(12px) saturate(110%);
   -webkit-backdrop-filter: blur(12px) saturate(110%);
   border: 1px solid rgba(121, 74, 250, 0.3);
-
+ 
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
-
+ 
   transition: transform 160ms ease, box-shadow 160ms ease, color 160ms ease;
 }
-
+ 
 .glass-card:hover {
   transform: translateY(-2px);
   box-shadow:
     0 12px 28px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
-
+ 
 .card-image {
   width: 56px;
   height: 56px;
@@ -113,14 +114,14 @@
   font-size: 1rem;
   font-weight: 600;
 }
-
+ 
 /* ---------- Animated borders ---------- */
 .border-anim span {
   position: absolute;
   transition: transform 0.5s;
   pointer-events: none;
 }
-
+ 
 /* horizontal lines: top & bottom */
 .border-anim span:nth-child(1),
 .border-anim span:nth-child(3) {
@@ -128,7 +129,7 @@
   height: 3px;
   background: #63e;
 }
-
+ 
 /* top line */
 .border-anim span:nth-child(1) {
   top: 0;
@@ -140,7 +141,7 @@
   transform: scaleX(0);
   transform-origin: left;
 }
-
+ 
 /* bottom line */
 .border-anim span:nth-child(3) {
   bottom: 0;
@@ -152,7 +153,7 @@
   transform: scaleX(0);
   transform-origin: right;
 }
-
+ 
 /* vertical lines: left & right */
 .border-anim span:nth-child(2),
 .border-anim span:nth-child(4) {
@@ -160,7 +161,7 @@
   height: 100%;
   background: #404040;
 }
-
+ 
 /* left line */
 .border-anim span:nth-child(2) {
   top: 0;
@@ -173,7 +174,7 @@
   transform: scale(1);
   transform-origin: top;
 }
-
+ 
 /* right line */
 .border-anim span:nth-child(4) {
   top: 0;
@@ -186,7 +187,7 @@
   transform: scale(1);
   transform-origin: bottom;
 }
-
+ 
 /* Brand color on hover/focus */
 .border-anim:hover,
 .border-anim:focus-visible {
@@ -196,7 +197,7 @@
 .border-anim:focus-visible span {
   background: #63e;
 }
-
+ 
 /* ---------- Accessibility ---------- */
 .glass-card:focus {
   outline: none;
@@ -205,7 +206,7 @@
   outline: 2px solid rgba(121, 74, 250, 0.8);
   outline-offset: 4px;
 }
-
+ 
 /* ---------- Responsive tweaks ---------- */
 @media (max-width: 768px) {
   .landing-logo {
@@ -216,9 +217,9 @@
     gap: 20px;
   }
 }
-
+ 
 /* ---------- Icon rain (UPDATED) ---------- */
-
+ 
 .icon-rain {
   position: fixed;    /* covers the viewport, stays at top-right even while scrolling */
   inset: 0;
@@ -226,7 +227,7 @@
   z-index: 0;         /* behind .landing-content */
   overflow: hidden;
 }
-
+ 
 /* Base drop icon */
 .icon-drop {
   position: absolute;
@@ -234,21 +235,21 @@
   right: 1.5vw;      /* moved slightly left from the right edge */
   will-change: transform, opacity;
   filter: drop-shadow(0 5px 14px rgba(91, 53, 213, 0.14));
-
+ 
   /* slightly higher default opacity; overridable per instance */
   opacity: var(--opacity, 0.15);
-
+ 
   /* One coherent fall animation; variables set per instance inline */
   animation: icon-fall var(--dur, 14s) linear var(--delay, 0s) infinite;
 }
-
+ 
 /* Sizes — lowered slightly */
 .size-xs { width: 60px;  height: auto; }
 .size-sm { width: 84px;  height: auto; }
 .size-md { width: 116px; height: auto; }
 .size-lg { width: 148px; height: auto; }
 .size-xl { width: 180px; height: auto; }
-
+ 
 /* Fall: top-right → downward with gentle left drift */
 @keyframes icon-fall {
   0% {
@@ -265,7 +266,7 @@
     opacity: 0.2;
   }
 }
-
+ 
 /* Reduced motion: faint static cluster */
 @media (prefers-reduced-motion: reduce) {
   .icon-drop {
@@ -274,13 +275,13 @@
     transform: translate(-5vw, 6vh) scale(var(--scale, 0.85));
   }
 }
-
+ 
 /* Typing animation for title */
 @keyframes typing {
   from { width: 0; }
   to { width: 54%; }
 }
-
+ 
 @keyframes blink-caret {
   from, to { border-color: transparent; }
   50% { border-color: currentColor; }

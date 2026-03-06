@@ -1,21 +1,203 @@
+// Articles.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./articles.css";
+import "./podcast.css"; // ✅ reuse the same tokens/look as Video/Podcast
 
 const API_BASE = "http://localhost:5275";
 
 const articlePdfUrl = (fileName) =>
   fileName ? `${API_BASE}/uploads/articles/${encodeURIComponent(fileName)}` : "";
 
+/* --------------------- subscription helpers (aligned with Videos.jsx) --------------------- */
+const isTruthy = (v) => v === true || v === "true" || v === 1 || v === "1";
+
 function getToken() {
+  return localStorage.getItem("token") || "";
+}
+
+function getUserFromStorage() {
+  const keys = ["user", "currentUser", "auth_user", "profile", "me"];
+  for (const k of keys) {
+    try {
+      const raw = localStorage.getItem(k);
+      if (raw) {
+        const obj = JSON.parse(raw);
+        if (obj && typeof obj === "object") return obj;
+      }
+    } catch {}
+  }
+  return {};
+}
+
+function saveUserToStorage(merged) {
   try {
-    const token = localStorage.getItem("token");
-    return token && token.split(".").length === 3 ? token : "";
+    localStorage.setItem("user", JSON.stringify(merged));
+  } catch {}
+}
+
+/** Local calendar end-of-day */
+function toLocalEndOfDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+}
+
+function parseLocalEndDate(endRaw) {
+  if (!endRaw) return null;
+  if (endRaw instanceof Date && !isNaN(endRaw.getTime())) return toLocalEndOfDay(endRaw);
+
+  if (typeof endRaw === "string") {
+    const s = endRaw.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      const [y, m, d] = s.split("-").map(Number);
+      return new Date(y, m - 1, d, 23, 59, 59, 999);
+    }
+    if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(s)) {
+      const [a, b, c] = s.split(/[-/]/).map(Number);
+      return new Date(c, b - 1, a, 23, 59, 59, 999); // DD-MM-YYYY
+    }
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+      const [mm, dd, yyyy] = s.split("/").map(Number); // US
+      return new Date(yyyy, mm - 1, dd, 23, 59, 59, 999);
+    }
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return toLocalEndOfDay(d);
+  }
+
+  const d = new Date(endRaw);
+  if (!isNaN(d.getTime())) return toLocalEndOfDay(d);
+  return null;
+}
+
+function isActiveFromSnapshot(user) {
+  if (!user || typeof user !== "object") return false;
+
+  // explicit flags if you ever add them
+  const flags = [
+    user.subscriptionActive,
+    user.isSubscribed,
+    user.isPremiumUser,
+    user.subscription?.active,
+    user.subscription?.isActive,
+    user.currentPlanActive,
+  ];
+  if (flags.some(isTruthy)) return true;
+
+  // plan + endDate (various keys)
+  const plan =
+    user.subscriptionPlan ??
+    user.plan ??
+    user.subscription?.plan ??
+    user.subscription?.planName ??
+    user.currentPlan ??
+    null;
+
+  const endRaw =
+    user.subscriptionEnd ??
+    user.endDate ??
+    user.subscription?.end ??
+    user.subscription?.endDate ??
+    user.currentPlanEnd ??
+    null;
+
+  if (!plan || !endRaw) return false;
+
+  const end = parseLocalEndDate(endRaw);
+  if (!end) return false;
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  return end >= startOfToday;
+}
+
+/**
+ * Fetch the current user's subscription state from the server and normalize it.
+ * Tolerates multiple DTO shapes:
+ *   - { active, plan, endDate }      // preferred
+ *   - { Status, Plan, EndDate, ... } // fallback
+ * Returns: { active: boolean, plan: string|null, endDate: string|null }
+ */
+async function fetchSubscriptionActive() {
+  const token = getToken();
+  const headers = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/subscription/me/current`, {
+      method: "GET",
+      headers,
+      credentials: "omit",
+    });
+
+    // Any non-2xx → treat as not active
+    if (!res.ok) {
+      return { active: false, plan: null, endDate: null };
+    }
+
+    const data = await res.json();
+    if (!data) {
+      return { active: false, plan: null, endDate: null };
+    }
+
+    // Prefer explicit 'active'
+    const hasActiveKey =
+      Object.prototype.hasOwnProperty.call(data, "active") ||
+      Object.prototype.hasOwnProperty.call(data, "Active");
+
+    if (hasActiveKey) {
+      const activeRaw = data.active ?? data.Active;
+      const activeBool =
+        activeRaw === true || activeRaw === "true" || activeRaw === 1 || activeRaw === "1";
+      return {
+        active: activeBool,
+        plan: data.plan ?? data.Plan ?? null,
+        endDate: data.endDate ?? data.EndDate ?? null,
+      };
+    }
+
+    // Derive from Status and/or EndDate
+    const statusRaw = (data.status ?? data.Status ?? "").toString().toLowerCase();
+    const endRaw = data.endDate ?? data.EndDate ?? null;
+
+    let active = false;
+    if (statusRaw) active = statusRaw === "active";
+
+    if (!active && endRaw) {
+      const end = new Date(endRaw);
+      if (!Number.isNaN(end.getTime())) {
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        active = end >= startOfToday;
+      }
+    }
+
+    return {
+      active,
+      plan: data.plan ?? data.Plan ?? null,
+      endDate: endRaw,
+    };
   } catch {
-    return "";
+    return { active: false, plan: null, endDate: null };
   }
 }
 
+/** Main gate used before opening the article viewer (mirrors Videos.jsx) */
+async function checkPremiumAccess() {
+  // 1) try local snapshot
+  const user = getUserFromStorage();
+  if (isActiveFromSnapshot(user)) return true;
+
+  // 2) fallback to server call and cache back into localStorage.user
+  const snap = await fetchSubscriptionActive();
+  const merged = { ...user };
+  if (snap.plan) merged.subscriptionPlan = snap.plan;
+  if (snap.endDate) merged.subscriptionEnd = snap.endDate;
+  merged.subscriptionActive = !!snap.active;
+  saveUserToStorage(merged);
+
+  return !!snap.active;
+}
+
+/* --------------------- generic helpers already present --------------------- */
 async function fetchJsonOrError(input, init) {
   const res = await fetch(input, init);
   const contentType = res.headers.get("content-type") || "";
@@ -60,24 +242,6 @@ const toast = {
   info: (msg) => (window.toast?.info ? window.toast.info(msg) : console.log("[info]", msg)),
 };
 
-/* ----- subscription helpers: gate premium before opening viewer ----- */
-function getUserFromStorage() {
-  try {
-    return JSON.parse(localStorage.getItem("user") || "{}");
-  } catch {
-    return {};
-  }
-}
-function isActiveSubscription(user) {
-  if (!user || !user.subscriptionPlan || !user.subscriptionEnd) return false;
-  const end = new Date(user.subscriptionEnd);
-  if (isNaN(end.getTime())) return false;
-  const today = new Date();
-  const endYMD = end.toISOString().slice(0, 10);
-  const todayYMD = today.toISOString().slice(0, 10);
-  return endYMD >= todayYMD;
-}
-
 // helper: extract views
 function extractViews(summary) {
   if (!summary || typeof summary !== "object") return 0;
@@ -86,6 +250,16 @@ function extractViews(summary) {
 
 // sessionStorage key helper
 const viewStartKey = (id) => `article:viewStart:${id}`;
+
+// format ISO date like other pages
+function formatDate(iso) {
+  try {
+    const d = new Date(iso);
+    return isNaN(d) ? "—" : d.toLocaleString();
+  } catch {
+    return "—";
+  }
+}
 
 export default function Articles() {
   const [articles, setArticles] = useState([]);
@@ -114,7 +288,6 @@ export default function Articles() {
         createdAt: a.createdAt ?? a.CreatedAt,
         fileName: a.fileName ?? a.FileName ?? "",
         content: a.content ?? a.Content ?? "",
-        // creator + views (to be filled from summary)
         creatorUserId: null,
         creatorName: "",
         views: 0,
@@ -155,12 +328,21 @@ export default function Articles() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const handleRead = (it) => {
-    const user = getUserFromStorage();
-    if (it.premium === true && !isActiveSubscription(user)) {
-      toast.info("You need an active subscription to read this premium article.");
-      return;
-    }
+  const handleRead = async (it, e) => {
+    const premium = isTruthy(it?.premium);
+
+    
+if (premium) {
+  const ok = await checkPremiumAccess();
+  if (!ok) {
+    if (e?.preventDefault) e.preventDefault();
+    if (e?.stopPropagation) e.stopPropagation();
+    // Use a native alert so the browser shows "localhost says ..."
+    alert("You need an active subscription to access this content.");
+    return;
+  }
+}
+
 
     // ✅ Start the 10s window at click-time (persist across navigation)
     try {
@@ -171,44 +353,37 @@ export default function Articles() {
   };
 
   return (
-    <div className="articles-page">
+    <section>
       <h1 className="page-title">ARTICLES</h1>
 
-      {loading && <div>Loading articles…</div>}
+      {loading && <div style={{ color: "gray" }}>Loading articles…</div>}
       {err && <div style={{ color: "crimson" }}>{err}</div>}
+      {!loading && articles.length === 0 && <small style={{ color: "gray" }}>No articles found.</small>}
 
-      {!loading && articles.length === 0 && <small>No articles found.</small>}
-
-      <div className="articles-grid">
+      {/* ✅ Use the same grid class as Videos/Podcasts */}
+      <div className="episodes-grid">
         {articles.map((it) => (
-          <div key={it.id} className="article-card">
-            {/* Badge: Premium / Free */}
-            {it.premium === true && <span className="premium-badge">Premium</span>}
+          <article key={it.id} className="episode-card">
+            {/* Premium badge (inline for articles, see CSS override) */}
+            {isTruthy(it.premium) && <span className="premium-badge">Premium</span>}
 
-            <h2 className="article-card-title">{it.title}</h2>
+            <div className="episode-content">
+              <h3>{it.title}</h3>
 
-            {/* Views */}
-            <p className="date">
-              {Number(it.views || 0).toLocaleString()} views
-            </p>
+              {/* Meta rows identical to Video */}
+              <p className="episode-meta">{Number(it.views || 0).toLocaleString()} views</p>
+              {it.category && <p className="episode-meta">Category: {it.category}</p>}
+              {it.creatorName && <p className="episode-meta">Uploaded by: {it.creatorName}</p>}
+              {it.createdAt && <p className="episode-meta">Uploaded: {formatDate(it.createdAt)}</p>}
 
-            <p className="date">{it.createdAt ? new Date(it.createdAt).toLocaleString() : ""}</p>
-
-            {/* Creator */}
-            <div className="creator-line" title={it.creatorName || ""}>
-              {it.creatorName ? (
-                <span>By <strong>{it.creatorName}</strong></span>
-              ) : (
-                <span>By —</span>
-              )}
+              {/* CTA styled like Video's play button */}
+              <button className="play-btn" onClick={(e) => handleRead(it, e)}>
+                Read
+              </button>
             </div>
-
-            <button className="view-pdf-btn" onClick={() => handleRead(it)}>
-              Read Article
-            </button>
-          </div>
+          </article>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
