@@ -1,34 +1,72 @@
-/* ---------- Layout variables ---------- */
+/*************************************************************
+  ARTICLES — GRID + CARD PARITY (NO COVER IMAGE)
+  - Use the same responsive grid as Video/Podcast
+  - Remove media block and make premium badge inline
+  - Ensure cards shrink properly in grid
+*************************************************************/
+
+/* Ensure the page section can expand */
+section {
+  width: 100% !important;
+}
+
+/* 1) Responsive grid identical to Video/Podcast */
+section .episodes-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 24px !important;
+  width: min(1280px, 95%) !important;
+  margin: 0 auto 24px !important;
+  align-items: start !important;
+  
+}
+
+/* 2) Cards can shrink properly inside the grid */
+section .episode-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  position: relative; /* keep for consistency; not required */
+  /* border: 1px solid #63e;
+  border-radius: 12px;
+  padding: 10px; */
+}
+
+/* 3) Since there is NO cover image, make Premium badge inline (not absolute) */
+section .episode-card .premium-badge {
+  position: static !important;
+  display: inline-block !important;
+  margin: 0 0 8px 0 !important;
+  border-radius: 6px !important; /* same visual as before */
+  box-shadow: none !important;
+}
+
+/* 4) Episode content spacing (works with podcast.css defaults) */
+section .episode-content {
+  padding: 0; /* podcast.css already has padding; adjust if needed */
+}
+
+/* ---------- Layout variables (legacy, safe to keep) ---------- */
 :root {
-  --sidebar-width: 72px;      /* 👈 set this to your actual sidebar width */
-  --page-max-width: 980px;    /* your container cap */
-  --card-width: 340px;        /* fixed card width for 2-in-a-row layout */
+  --sidebar-width: 72px;
+  --page-max-width: 980px;
+  --card-width: 340px; /* legacy only */
   --gap: 16px;
   --accent: #63e;
 }
 
 body {
   margin: 0;
-  background: #fff;
+  background: #fff; /* podcast.css styles <section> in dark; body can stay light */
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* ---------- Page containers ---------- */
+/* ---------- Page containers (legacy) ---------- */
 .articles-page,
 .detail-page {
-  /* Keep page centered and clear of sidebar on larger screens */
   max-width: var(--page-max-width);
   padding: 24px;
   align-items: center;
 }
-
-/* Reserve space so content never sits under the fixed left sidebar */
-/* @media (min-width: 768px) {
-  .articles-page,
-  .detail-page {
-    margin-left: var(--sidebar-width);
-  }
-} */
 
 /* ---------- Title ---------- */
 .page-title {
@@ -38,33 +76,19 @@ body {
   text-align: center;
 }
 
-/* ---------- Articles grid: EXACTLY two cards per row, centered ---------- */
+/* ---------- Neutralize legacy .articles-grid so it doesn't interfere ---------- */
 .articles-grid {
-  display: grid;
-  gap: var(--gap);
-
-  /* Two fixed-width columns so the grid has intrinsic width */
-  grid-template-columns: repeat(2, var(--card-width));
-
-  /* Center the tracks within the page container */
-  justify-content: center;
-
-  /* Optional: also center the grid block if container is much wider */
-  max-width: calc(2 * var(--card-width) + var(--gap));
-  margin: 0 auto;
+  display: contents !important;
 }
 
-/* ---------- Cards ---------- */
+/* ---------- Legacy card styles (kept for other views) ---------- */
 .article-card {
-
   border-radius: 12px;
   padding: 16px;
-
   background-color: rgb(255, 255, 255);
   backdrop-filter: blur(10px);
   border: 2px solid rgba(50, 50, 50, 0.2);
 }
-
 
 .article-card.glass-tint {
   background: linear-gradient(
@@ -77,14 +101,12 @@ body {
   -webkit-backdrop-filter: blur(14px) saturate(110%);
 }
 
-
 .article-card-title,
 .article-card .author,
 .article-card .date,
 .article-card .excerpt {
-  color:#000 ; /* or your brand text color */
+  color: #000;
 }
-
 
 .article-engagement {
   display: flex;
@@ -93,7 +115,6 @@ body {
   font-size: 0.9rem;
   color: #555;
 }
-
 
 .article-card-title {
   margin: 0 0 8px;
@@ -180,18 +201,18 @@ body {
   background: rgb(152, 116, 252);
 }
 
-/* ---------- Mobile: single column & no sidebar offset ---------- */
+/* ---------- Mobile ---------- */
 @media (max-width: 767px) {
   .articles-page,
   .detail-page {
-    margin-left: 0;          /* no sidebar offset on mobile */
+    margin-left: 0;
     padding: 16px;
   }
 
-  .articles-grid {
-    grid-template-columns: 1fr;   /* one card per row */
-    max-width: none;              /* let it fill the container */
-    justify-content: stretch;
+  section .episodes-grid {
+    gap: 16px !important;
+    width: 95% !important;
+    margin: 0 auto 16px !important;
   }
 }
 
@@ -240,13 +261,12 @@ body {
 
 .premium-badge {
   display: inline-block;
-  background: #FEF08A;         /* amber-200 */
-  color: #92400E;               /* amber-800 */
-  border: 1px solid #FDE68A;    /* amber-300 */
+  background: #FEF08A;
+  color: #92400E;
+  border: 1px solid #FDE68A;
   padding: 2px 8px;
   border-radius: 6px;
   font-weight: 700;
   font-size: 12px;
   margin-bottom: 8px;
 }
-
