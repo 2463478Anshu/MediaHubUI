@@ -1,26 +1,25 @@
 /* PAGE LAYOUT --------------------------------------------------- */
 .video-page-root {
   width: 100%;
-  display: block;
-  background: #ffffff;           /* white page */
+  display: flex;
+  justify-content: center;
+  background: #f9f9f9;
   padding: 20px 0;
 }
 
-
 .video-wrapper {
-  width: min(1400px, 96%);             /* allow a bit more total width */
-  margin-left: 2%;                      /* keep left-anchored */
-  margin-right: auto;
-  display: grid;
-  grid-template-columns: 1.25fr minmax(260px, 360px); /* <-- wider left, tighter right */
+  width: 95%;
+  max-width: 1600px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 28px;
 }
 
-
 /* LEFT SIDE : MAIN VIDEO AREA ---------------------------------- */
 .video-main {
+  flex: 3.2;
   background: #fff;
-  border: 1px solid #e5e5e5;
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 6px 14px rgba(0,0,0,0.08);
@@ -28,170 +27,129 @@
 
 .video-player {
   width: 100%;
-  aspect-ratio: 16 / 9;        /* consistent hero area */
-  background: #000;
-  border: 1px solid #e5e5e5;
   border-radius: 10px;
-  object-fit: cover;
+  background: #000;
 }
 
 .video-title {
-  margin: 14px 0 6px 0;
-  font-size: 1.6rem;
-  font-weight: 700;
+  margin-top: 14px;
+  font-size: 1.4rem;
+  font-weight: 600;
   color: #0f0f0f;
-  text-align: left;            /* keep left */
 }
 
-/* ---- Uploader row (reused pattern from Podcast Player) ---- */
-.uploader-row {
-  display: grid;
-  grid-template-columns: 40px 1fr auto; /* avatar | names | subscribe */
-  gap: 12px;
-  align-items: center;
+.video-category,
+.video-date {
+  color: #606060;
   margin-top: 4px;
 }
-.uploader-avatar {
-  width: 40px; height: 40px;
-  display: grid; place-items: center;
-  background: #f5f5f5;
-  border: 1px solid #e5e5e5;
-  border-radius: 50%;
-  font-size: 1.05rem;
-}
-.uploader-meta { display: flex; flex-direction: column; min-width: 0; }
-.uploader-name {
-  font-weight: 700;
-  color: #0f0f0f;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.uploader-subs { color: #606060; font-size: 0.9rem; }
 
-/* Subscribe pill */
-.uploader-sub-btn {
-  padding: 8px 16px;
-  border-radius: 999px;
-  font-weight: 700;
-}
-.video-subscribe-btn {
-  background: #cc0000; color: #fff; border: 1px solid #cc0000;
-}
-.video-subscribe-btn:hover { filter: brightness(1.05); }
-.video-subscribed-btn {
-  background: #e3e3e3; color: #111; border: 1px solid #d9d9d9;
-}
 
-/* ---- Views • date strip ---- */
-.watch-meta {
-  display: inline-flex;
-  gap: 10px;
-  align-items: center;
-  margin-top: 10px;
-  color: #606060;
-  font-size: 0.95rem;
-}
-.watch-meta .dot-sep { opacity: .6; }
-.badge {
-  background: #f1f1f1;
-  padding: 4px 10px;
-  border-radius: 14px;
-  font-size: 0.85rem;
-}
-
-/* ---- Engagement ---- */
+/* ENGAGEMENT BUTTONS -------------------------------------------- */
 .video-engagement {
   margin-top: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
   flex-wrap: wrap;
 }
+
 .video-engagement button {
-  padding: 8px 14px;
-  border-radius: 999px;
+  padding: 8px 16px;
+  border-radius: 20px;
   background: #f1f1f1;
-  border: 1px solid #e5e5e5;
+  border: none;
   cursor: pointer;
-  transition: background 160ms ease, transform 160ms ease;
+  transition: 0.2s ease;
 }
+
 .video-engagement button:hover {
-  background: #ececec;
-  transform: translateY(-1px);
+  background: #e5e5e5;
 }
 
-/* Optional description */
-.video-description {
-  margin-top: 12px;
+/* SUBSCRIBE BUTTON STYLE LIKE YOUTUBE */
+.video-subscribe-btn {
+  background: #cc0000 !important;
+  color: #fff;
+}
+.video-subscribed-btn {
+  background: #e3e3e3 !important;
   color: #111;
-  line-height: 1.5;
 }
 
-/* ---- Comments ---- */
-.video-comments { margin-top: 24px; }
+/* COMMENTS ------------------------------------------------------- */
+.video-comments {
+  margin-top: 28px;
+}
+
 .comments-title {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 14px;
 }
+
 .comment-form {
   display: flex;
   gap: 10px;
   margin-bottom: 18px;
 }
+
 .comment-input {
   flex: 1;
-  padding: 10px 12px;
-  border-radius: 999px;
+  padding: 10px;
+  border-radius: 6px;
   border: 1px solid #ccc;
 }
+
 .comment-post-btn {
-  background: #065fd4;
+  background: #3b76f6;
   color: white;
-  border: 1px solid #065fd4;
+  border: none;
   padding: 8px 18px;
-  border-radius: 999px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 160ms ease, transform 160ms ease;
 }
+
 .comment-post-btn:hover {
-  background: #1e77ea;
-  transform: translateY(-1px);
+  background: #2f63d2;
 }
+
 .comments-list .comment-item {
-  display: grid;
-  grid-template-columns: 36px 1fr;
+  display: flex;
   gap: 12px;
   margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e5e5e5;
 }
+
 .comment-avatar {
-  width: 36px; height: 36px;
-  display: grid; place-items: center;
-  background: #f5f5f5;
-  border: 1px solid #e5e5e5;
-  border-radius: 50%;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
 }
+
 .comment-text {
-  background: transparent;
-  border-radius: 0;
-  padding: 0;
-  color: #111;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 6px 10px;
 }
 
 /* RIGHT SIDE : RELATED VIDEOS ----------------------------------- */
 .video-next {
+  flex: 1.4;
   position: sticky;
-  top: 10px;
-  align-self: start;
+  top: 0;
 }
+
 .next-title {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 14px;
 }
-.next-grid { display: flex; flex-direction: column; gap: 14px; }
+
+/* Vertical stacked list like YouTube */
+.next-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .next-card {
   display: flex;
   gap: 12px;
@@ -199,20 +157,28 @@
   padding: 8px;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-  transition: background 160ms ease, transform 160ms ease;
+  transition: 0.2s ease;
 }
-.next-card:hover { background: #f1f1f1; transform: translateY(-1px); }
-.next-link { display: flex; gap: 10px; text-decoration: none; color: inherit; }
+
+.next-card:hover {
+  background: #f1f1f1;
+}
+
+.next-link {
+  display: flex;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
 .next-video {
-  width: 160px; height: 90px; /* 16:9 */
+  width: 160px;
+  height: 90px;
   border-radius: 8px;
   object-fit: cover;
   background: #000;
-  
-width: 152px;
-  height: 86px; 
-
 }
+
 .next-label {
   font-size: 0.95rem;
   font-weight: 500;
@@ -223,14 +189,63 @@ width: 152px;
 /* RESPONSIVE ----------------------------------------------------- */
 @media (max-width: 992px) {
   .video-wrapper {
-    grid-template-columns: 1fr;  /* stack sidebar below */
+    flex-direction: column;
   }
-  .video-next { position: static; }
-  .next-video { width: 140px; height: 80px; }
+  .video-next {
+    width: 100%;
+  }
+  .next-video {
+    width: 140px;
+    height: 80px;
+  }
 }
-@media (max-width: 640px) {
-  .video-title { font-size: 1.28rem; }
-  .uploader-row { grid-template-columns: 36px 1fr auto; gap: 10px; }
-  .uploader-avatar { width: 36px; height: 36px; }
-  .next-video { width: 120px; height: 68px; }
+
+/* ===== Creator + Like row (shared look) ===== */
+.creator-like-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.creator-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.creator-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.creator-name { font-weight: 600; color: #0f0f0f; }
+.creator-subs { color: #606060; }
+.content-line {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  color: #606060;
+}
+.badge {
+  background: #f1f1f1;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+}
+.muted { color: #606060; font-size: 0.95rem; }
+.like-only-right { margin-left: auto; }
+.like-only-right .video-like-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  border: none;
+  cursor: pointer;
+}
+.like-only-right .video-like-btn:hover { background: #e5e5e5; }
+
+@media (max-width: 768px) {
+  .creator-like-row { flex-direction: column; align-items: stretch; }
+  .like-only-right { align-self: flex-end; }
 }

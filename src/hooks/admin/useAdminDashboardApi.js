@@ -189,8 +189,8 @@ export default function useAdminDashboardApi() {
   }
 
   // Growth: call server and store series (memoized to prevent identity changes)
-  const fetchGrowth = useCallback(async (metric = "views", options = {}) => {
-    const series = await getJson("/api/v1/engagement/admin/growth", { metric, ...options });
+  const fetchGrowth = useCallback(async (metric = "views", weeks = 12) => {
+    const series = await getJson("/api/v1/engagement/admin/growth", { metric, weeks });
     setGrowth(series);
     return series;
   }, []); // setGrowth is stable; getJson is module-scoped and stable

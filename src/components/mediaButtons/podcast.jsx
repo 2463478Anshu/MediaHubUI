@@ -5,196 +5,6 @@ import "./podcast.css";
 
 const API_BASE = "http://localhost:5275";
 
-/* --------------------- helpers (mirrors Videos.jsx) --------------------- */
-const isTruthy = (v) => v === true || v === "true" || v === 1 || v === "1";
-
-function getToken() {
-  return localStorage.getItem("token") || "";
-}
-
-function getUserFromStorage() {
-  const keys = ["user", "currentUser", "auth_user", "profile", "me"];
-  for (const k of keys) {
-    try {
-      const raw = localStorage.getItem(k);
-      if (raw) {
-        const obj = JSON.parse(raw);
-        if (obj && typeof obj === "object") return obj;
-      }
-    } catch {}
-  }
-  return {};
-}
-
-function saveUserToStorage(merged) {
-  try {
-    localStorage.setItem("user", JSON.stringify(merged));
-  } catch {}
-}
-
-/** Local calendar end-of-day */
-function toLocalEndOfDay(d) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
-}
-
-function parseLocalEndDate(endRaw) {
-  if (!endRaw) return null;
-  if (endRaw instanceof Date && !isNaN(endRaw.getTime())) return toLocalEndOfDay(endRaw);
-
-  if (typeof endRaw === "string") {
-    const s = endRaw.trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-      const [y, m, d] = s.split("-").map(Number);
-      return new Date(y, m - 1, d, 23, 59, 59, 999);
-    }
-    if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(s)) {
-      const [a, b, c] = s.split(/[-/]/).map(Number);
-      return new Date(c, b - 1, a, 23, 59, 59, 999); // DD-MM-YYYY
-    }
-    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-      const [mm, dd, yyyy] = s.split("/").map(Number); // US
-      return new Date(yyyy, mm - 1, dd, 23, 59, 59, 999);
-    }
-    const d = new Date(s);
-    if (!isNaN(d.getTime())) return toLocalEndOfDay(d);
-  }
-
-  const d = new Date(endRaw);
-  if (!isNaN(d.getTime())) return toLocalEndOfDay(d);
-  return null;
-}
-
-function isActiveFromSnapshot(user) {
-  if (!user || typeof user !== "object") return false;
-
-  // explicit flags if you ever add them
-  const flags = [
-    user.subscriptionActive,
-    user.isSubscribed,
-    user.isPremiumUser,
-    user.subscription?.active,
-    user.subscription?.isActive,
-    user.currentPlanActive,
-  ];
-  if (flags.some(isTruthy)) return true;
-
-  // plan + endDate (various keys)
-  const plan =
-    user.subscriptionPlan ??
-    user.plan ??
-    user.subscription?.plan ??
-    user.subscription?.planName ??
-    user.currentPlan ??
-    null;
-
-  const endRaw =
-    user.subscriptionEnd ??
-    user.endDate ??
-    user.subscription?.end ??
-    user.subscription?.endDate ??
-    user.currentPlanEnd ??
-    null;
-
-  if (!plan || !endRaw) return false;
-
-  const end = parseLocalEndDate(endRaw);
-  if (!end) return false;
-
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-  return end >= startOfToday;
-}
-
-/**
- * Fetch the current user's subscription state from the server and normalize it.
- * Tolerates multiple DTO shapes:
- *   - { active, plan, endDate }      // preferred
- *   - { Status, Plan, EndDate, ... } // fallback
- * Returns: { active: boolean, plan: string|null, endDate: string|null }
- */
-async function fetchSubscriptionActive() {
-  const token = getToken();
-  const headers = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  try {
-    const res = await fetch(`${API_BASE}/api/subscription/me/current`, {
-      method: "GET",
-      headers,
-      credentials: "omit",
-    });
-
-    // Any non-2xx → treat as not active
-    if (!res.ok) {
-      return { active: false, plan: null, endDate: null };
-    }
-
-    // 200 with null body → not active
-    const data = await res.json();
-    if (!data) {
-      return { active: false, plan: null, endDate: null };
-    }
-
-    // Prefer explicit 'active'
-    const hasActiveKey =
-      Object.prototype.hasOwnProperty.call(data, "active") ||
-      Object.prototype.hasOwnProperty.call(data, "Active");
-
-    if (hasActiveKey) {
-      const activeRaw = data.active ?? data.Active;
-      const activeBool =
-        activeRaw === true || activeRaw === "true" || activeRaw === 1 || activeRaw === "1";
-      return {
-        active: activeBool,
-        plan: data.plan ?? data.Plan ?? null,
-        endDate: data.endDate ?? data.EndDate ?? null,
-      };
-    }
-
-    // Derive from Status and/or EndDate
-    const statusRaw = (data.status ?? data.Status ?? "").toString().toLowerCase();
-    const endRaw = data.endDate ?? data.EndDate ?? null;
-
-    let active = false;
-    if (statusRaw) active = statusRaw === "active";
-
-    if (!active && endRaw) {
-      const end = new Date(endRaw);
-      if (!Number.isNaN(end.getTime())) {
-        const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-        active = end >= startOfToday;
-      }
-    }
-
-    return {
-      active,
-      plan: data.plan ?? data.Plan ?? null,
-      endDate: endRaw,
-    };
-  } catch {
-    return { active: false, plan: null, endDate: null };
-  }
-}
-
-/** Main gate used by the card click (mirrors Videos.jsx) */
-async function checkPremiumAccess() {
-  // 1) try local snapshot
-  const user = getUserFromStorage();
-  if (isActiveFromSnapshot(user)) return true;
-
-  // 2) fallback to server call and cache back into localStorage.user
-  const snap = await fetchSubscriptionActive();
-  const merged = { ...user };
-  if (snap.plan) merged.subscriptionPlan = snap.plan;
-  if (snap.endDate) merged.subscriptionEnd = snap.endDate;
-  merged.subscriptionActive = !!snap.active;
-  saveUserToStorage(merged);
-
-  return !!snap.active;
-}
-
-/* --------------------- formatting helpers --------------------- */
 // Utility: format seconds into mm:ss or hh:mm:ss
 function formatDuration(totalSeconds) {
   if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return "—";
@@ -202,7 +12,9 @@ function formatDuration(totalSeconds) {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
   const pad = (n) => String(n).padStart(2, "0");
-  return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${minutes}:${pad(seconds)}`;
+  return hours > 0
+    ? `${hours}:${pad(minutes)}:${pad(seconds)}`
+    : `${minutes}:${pad(seconds)}`;
 }
 
 // Format ISO date safely
@@ -215,31 +27,44 @@ function formatDate(iso) {
   }
 }
 
+/* ----- subscription helpers (kept minimal) ----- */
+function getUserFromStorage() {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "{}");
+  } catch {
+    return {};
+  }
+}
+function isActiveSubscription(user) {
+  if (!user || !user.subscriptionPlan || !user.subscriptionEnd) return false;
+  const end = new Date(user.subscriptionEnd);
+  if (isNaN(end.getTime())) return false;
+  const today = new Date();
+  const endYMD = end.toISOString().slice(0, 10);
+  const todayYMD = today.toISOString().slice(0, 10);
+  return endYMD >= todayYMD;
+}
+
 // ---- views helper: tolerate multiple property names from DTO ----
 function extractViews(summary) {
   if (!summary || typeof summary !== "object") return 0;
   return summary.views ?? summary.viewCount ?? summary.viewsCount ?? 0;
 }
 
-/* --------------------- Card --------------------- */
 function EpisodeCard({ episode }) {
   const navigate = useNavigate();
   const [views, setViews] = useState(0);
 
-  // Keep UI unchanged; just upgrade the premium check
-  async function onPlayClick(e) {
-    const premium = isTruthy(episode?.premium);
+  function onPlayClick() {
+    const user = getUserFromStorage();
+    const isPremium = episode?.premium === true;
 
-    if (premium) {
-      const ok = await checkPremiumAccess();
-      if (!ok) {
-        if (e?.preventDefault) e.preventDefault();
-        if (e?.stopPropagation) e.stopPropagation();
-        alert(
-          "You need an active subscription to play this premium podcast.\n\nPlease choose a plan to continue."
-        );
-        return;
-      }
+    // ✅ Only gate premium content
+    if (isPremium && !isActiveSubscription(user)) {
+      alert(
+        "You need an active subscription to play this premium podcast.\n\nPlease choose a plan to continue."
+      );
+      return;
     }
 
     navigate(`/podcast/${episode.id}`);
@@ -261,33 +86,43 @@ function EpisodeCard({ episode }) {
       }
     }
     loadViews();
-    return () => {
-      aborted = true;
-    };
+    return () => { aborted = true; };
   }, [episode?.id]);
 
   // prefer server-provided cover
-  const serverCover = episode?.coverImagePath ? `${API_BASE}${episode.coverImagePath}` : null;
+  const serverCover = episode?.coverImagePath
+    ? `${API_BASE}${episode.coverImagePath}`
+    : null;
 
   return (
     <article className="episode-card">
       {/* Badge: Premium */}
-      {isTruthy(episode?.premium) && <span className="premium-badge">Premium</span>}
+      {episode?.premium === true && <span className="premium-badge">Premium</span>}
 
       {/* Cover from server */}
       {serverCover && (
-        <img src={serverCover} alt={`${episode.title} cover`} className="episode-cover" />
+        <img
+          src={serverCover}
+          alt={`${episode.title} cover`}
+          className="episode-cover"
+        />
       )}
 
       <div className="episode-content">
         <h3>{episode.title}</h3>
         {episode.description && <p>{episode.description}</p>}
-        {Number.isFinite(episode.duration) && <p>Duration: {formatDuration(episode.duration)}</p>}
+        {Number.isFinite(episode.duration) && (
+          <p>Duration: {formatDuration(episode.duration)}</p>
+        )}
         {/* Views */}
         <p className="episode-meta">{Number(views || 0).toLocaleString()} views</p>
         {/* Show uploader and date if available */}
-        {episode.createdBy && <p className="episode-meta">Uploaded by: {episode.createdBy}</p>}
-        {episode.createdAt && <p className="episode-meta">Uploaded: {formatDate(episode.createdAt)}</p>}
+        {episode.createdBy && (
+          <p className="episode-meta">Uploaded by: {episode.createdBy}</p>
+        )}
+        {episode.createdAt && (
+          <p className="episode-meta">Uploaded: {formatDate(episode.createdAt)}</p>
+        )}
 
         <button onClick={onPlayClick} className="play-btn">
           Play
@@ -297,7 +132,6 @@ function EpisodeCard({ episode }) {
   );
 }
 
-/* --------------------- Page --------------------- */
 export default function Podcast() {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("All");
@@ -313,7 +147,7 @@ export default function Podcast() {
         setLoading(true);
         const response = await fetch(`${API_BASE}/api/v1/podcast`);
         if (!response.ok) {
-          if (!cancel) setEpisodes([]);
+          setEpisodes([]);
           return;
         }
         const podcasts = await response.json();
@@ -358,7 +192,7 @@ export default function Podcast() {
     <section>
       <h1 className="page-title">PODCASTS</h1>
 
-      {/* Optional search UI */}
+      {/* Optional search UI; you can add inputs/selects here if you want */}
       {/* <input value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search..." /> */}
       {/* <select value={tag} onChange={(e)=>setTag(e.target.value)}>{allTags.map(t=><option key={t}>{t}</option>)}</select> */}
 

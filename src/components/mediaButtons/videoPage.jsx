@@ -70,31 +70,6 @@ const isAdminUser = (u) => {
   );
 };
 
-// ---------- NEW: Relative date ("4 days ago", "13 years ago") ----------
-function formatRelativeDate(iso) {
-  try {
-    const d = new Date(iso);
-    if (isNaN(d)) return "—";
-    const now = new Date();
-    const diff = Math.max(0, now - d);
-    const sec = Math.floor(diff / 1000);
-    const min = Math.floor(sec / 60);
-    const hr  = Math.floor(min / 60);
-    const day = Math.floor(hr / 24);
-    const mon = Math.floor(day / 30);
-    const yr  = Math.floor(day / 365);
-    const unit = (n, s) => `${n} ${s}${n !== 1 ? "s" : ""} ago`;
-    if (yr  >= 1) return unit(yr,  "year");
-    if (mon >= 1) return unit(mon, "month");
-    if (day >= 1) return unit(day, "day");
-    if (hr  >= 1) return unit(hr,  "hour");
-    if (min >= 1) return unit(min, "minute");
-    return unit(sec, "second");
-  } catch {
-    return "—";
-  }
-}
-
 export default function VideoPage() {
   const { id } = useParams(); // contentId (Guid)
   const { user } = useContext(UserContext);
@@ -191,7 +166,7 @@ export default function VideoPage() {
     }
     load();
 
-    // cleanup timers
+  // cleanup timers
     return () => {
       if (viewTimerRef.current) {
         clearTimeout(viewTimerRef.current);
@@ -363,62 +338,23 @@ export default function VideoPage() {
             onEnded={handlePauseOrEnded}
           />
           <h2 className="video-title">{video.title}</h2>
-
-          {/* Uploader row (left-aligned, like podcast player) */}
-          <div className="uploader-row">
-            <div className="uploader-avatar" aria-hidden="true">🎬</div>
-            <div className="uploader-meta">
-              <div className="uploader-name">
-                {video.createdBy || video.uploaderName || "Creator"}
-              </div>
-              {/* <div className="uploader-subs">7.04M subscribers</div> */}
-            </div>
-            <button
-              onClick={handleSubscribe}
-              className={subscribed ? "video-subscribed-btn uploader-sub-btn" : "video-subscribe-btn uploader-sub-btn"}
-              type="button"
-            >
-              {subscribed ? "Subscribed" : "Subscribe"}
-            </button>
-          </div>
-
-          {/* Views • relative date */}
-          <div className="watch-meta">
-            <span className="watch-views">{Number(views || 0).toLocaleString()} views</span>
-            {video.createdAt && (
-              <>
-                <span className="dot-sep">•</span>
-                <span className="watch-date" title={new Date(video.createdAt).toLocaleString()}>
-                  {formatRelativeDate(video.createdAt)}
-                </span>
-              </>
-            )}
-            {video.category && (
-              <>
-                <span className="dot-sep">•</span>
-                <span className="badge">{video.category}</span>
-              </>
-            )}
-          </div>
+          {video.category && <p className="video-category">Category: {video.category}</p>}
+          {/* Views and date */}
+          <p className="video-date">{Number(views || 0).toLocaleString()} views</p>
+          <p className="video-date">Uploaded on {video.createdAt}</p>
 
           {/* Engagement Section */}
           <div className="video-engagement">
             <button className="video-like-btn" onClick={handleLike}>
               {liked ? "💖" : "🤍"} Likes {likes}
             </button>
-            {/* Keep subscribe here too if you want duplicate placement
             <button
               onClick={handleSubscribe}
               className={subscribed ? "video-subscribed-btn" : "video-subscribe-btn"}
             >
               {subscribed ? "Subscribed" : "Subscribe"}
-            </button> */}
+            </button>
           </div>
-
-          {/* Description (optional if you have one) */}
-          {video.description && (
-            <p className="video-description">{video.description}</p>
-          )}
 
           {/* Comments Section */}
           <div className="video-comments">
