@@ -5,16 +5,33 @@ import { UserContext } from "../../context/userContext.jsx";
 import "./signup.css";
 import Spinner from "../Spinner.jsx";
 import "../Spinner.css";
-import Modal from "../../components/Modal.jsx"; // ⬅️ align with Login.jsx
+import Modal from "../../components/Modal.jsx";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5275";
 
+// Extract the first validation message from our standardized 400 body
+function getFirstValidationMessage(body) {
+  try {
+    if (body?.errors && Array.isArray(body.errors) && body.errors.length > 0) {
+      const first = body.errors[0];
+      if (first?.messages?.length > 0) return first.messages[0];
+    }
+    if (body?.title) return body.title;
+  } catch {}
+  return "Validation failed. Please check your inputs.";
+}
+
+// Normalize raw token -> bare JWT string (no "Bearer ")
+function toJwt(raw) {
+  if (!raw) return "";
+  const t = String(raw).trim();
+  return t.startsWith("Bearer ") ? t.slice(7) : t;
+}
+
 function Signup({ setLoggedIn }) {
-  // ⬅️ Bring in setToken to store JWT like Login.jsx
   const { setUser, setToken } = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
-
   const from = location.state?.from || "/";
 
   // Form state
@@ -24,64 +41,92 @@ function Signup({ setLoggedIn }) {
   const [birthCity, setBirthCity] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("user");
+
+  // Backend expects "User" | "Admin"
+  const [role, setRole] = useState("User");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // UI state
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
 
-  // ✅ Same helpers/validators as in Login.jsx
-  const validateName = (name) => /^[a-zA-Z0-9]{3,15}$/.test(name);
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validatePassword = (password) => /^(?=.*[0-9]).{6,}$/.test(password);
-  const validateBirthCity = (city) => /^[a-zA-Z\s]{2,30}$/.test(city.trim());
+  // =========================
+  // Client-side validators
+  // =========================
 
-  // Normalize raw token -> bare JWT string (no "Bearer ")
-  const toJwt = (raw) => {
-    if (!raw) return "";
-    const t = String(raw).trim();
-    return t.startsWith("Bearer ") ? t.slice(7) : t;
-  };
+  // Full Name: letters + spaces only, length 2–100
+  const validateName = (val) => /^[A-Za-z ]{2,100}$/.test(val.trim());
+
+  // Username: letters, numbers, underscore only; length 3–20
+  const validateUserName = (val) => /^[A-Za-z0-9_]{3,20}$/.test(val);
+
+  // Email with TLD requirement
+  const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
+  // Strong password: at least 1 lower, 1 upper, 1 digit, 1 special; 6–100
+  const STRONG_PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,100}$/;
+  const validatePassword = (val) => STRONG_PWD_REGEX.test(val);
+
+  const validateBirthCity = (val) =>
+    val && val.trim().length >= 2 && val.trim().length <= 100;
+
+  // Convenience toast wrappers (top-right)
+  const toastError = (msg) => window.toast?.error(msg, { position: "top-right" });
+  const toastInfo = (msg) => window.toast?.info(msg, { position: "top-right" });
+  const toastSuccess = (msg) => window.toast?.success(msg, { position: "top-right" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setSuccess("");
 
-    // Client-side validation
-    if (!validateName(username)) {
-      setError("Invalid Username format! Example: user123");
+    // Prevent multiple submissions while request is in-flight
+    if (submitting) return;
+
+    // Client-side validation → use toast (top-right), no inline error banners
+    if (!validateUserName(username)) {
+      toastError("Username must be 3–20 characters and can contain only letters, numbers, and underscore (_).");
+      return;
+    }
+    if (!validateName(name)) {
+      toastError("Full Name can contain only letters and spaces, and must be 2–100 characters long.");
       return;
     }
     if (!validateEmail(email)) {
-      setError("Invalid email format! Example: user@example.com");
+      toastError("Invalid email format. Example: user@example.com");
       return;
     }
     if (!validatePassword(password)) {
-      setError("Password must be at least 6 characters and contain a number. Example: Pass123");
+      toastError("Password must be 6–100 chars and include at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.");
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match!");
+      toastError("Passwords do not match!");
       return;
     }
     if (!validateBirthCity(birthCity)) {
-      setError("Please enter a valid city name (letters and spaces only, 2–30 characters).");
+      toastError("Please enter a valid city name (2–100 characters).");
+      return;
+    }
+    if (!(role === "User" || role === "Admin")) {
+      toastError("Role must be 'User' or 'Admin'.");
       return;
     }
 
     const payload = {
       email: email.trim().toLowerCase(),
       password,
-      role,
-      userName: username,
-      fullName: name,
+      role, // "User" | "Admin"
+      userName: username.trim(),
+      fullName: name.trim(),
       city: birthCity.trim().toLowerCase(), // security answer
     };
+
+    // Add a 15s network timeout like Login.jsx for consistent UX
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
       setSubmitting(true);
@@ -90,34 +135,53 @@ function Signup({ setLoggedIn }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
 
-      // Read as text first to show better error messages
-      const text = await response.text();
+      clearTimeout(timeout);
+
       let data = null;
+      const text = await response.text();
       try {
         data = text ? JSON.parse(text) : null;
       } catch {
-        data = text; // raw text fallback
+        data = text; // fallback
       }
 
       if (!response.ok) {
+        if (response.status === 409) {
+          const msg = (data && data.detail) || "Email already registered.";
+          toastError(msg);
+          return;
+        }
+        if (response.status === 400) {
+          const msg = getFirstValidationMessage(data);
+          toastError(msg);
+          return;
+        }
+        if (response.status === 422) {
+          const msg = (data && data.detail) || "Invalid role.";
+          toastError(msg);
+          return;
+        }
+        if (response.status === 500) {
+          toastError("Server error. Please try again.");
+          return;
+        }
         const serverMsg =
           (data && data.message) ||
           (typeof data === "string" ? data : "") ||
           "Registration failed.";
-        throw new Error(serverMsg);
+        toastError(serverMsg);
+        return;
       }
 
-      // 👉 If backend mirrors Login: data should have token + user
       const jwt = toJwt(data?.token ?? data?.Token);
 
       if (jwt) {
-        // ✔ Save token EXACTLY like Login.jsx
         setToken(jwt);
         localStorage.setItem("token", jwt);
 
-        // ✔ Normalize user object (same fields you used in Login.jsx)
         const normalizedUser = {
           id: data.user?.userId ?? data.User?.UserId,
           name: data.user?.fullName ?? data.User?.FullName ?? name,
@@ -130,31 +194,33 @@ function Signup({ setLoggedIn }) {
         setUser(normalizedUser);
         localStorage.setItem("user", JSON.stringify(normalizedUser));
         localStorage.setItem("loggedIn", "true");
-
         setLoggedIn?.(true);
 
-        // ✅ Success UI feedback
         setSuccess("Signup successful!");
-        window.toast?.success("Account created successfully!");
+        toastSuccess("Account created successfully!");
         setShowSignupSuccess(true);
-      } else {
-        // 🚨 Backend does NOT return token → send to login
-        window.toast?.info("Account created. Please log in.");
-        navigate("/login", { replace: true });
-        return;
-      }
 
-      // Clear fields
-      setName("");
-      setUsername("");
-      setEmail("");
-      setBirthCity("");
-      setPassword("");
-      setConfirmPassword("");
-      setRole("user");
+        // Clear
+        setName("");
+        setUsername("");
+        setEmail("");
+        setBirthCity("");
+        setPassword("");
+        setConfirmPassword("");
+        setRole("User");
+      } else {
+        toastInfo("Account created. Please log in.");
+        navigate("/login", { replace: true });
+      }
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
-      window.toast?.error(err.message || "Registration failed.");
+      clearTimeout(timeout);
+
+      // Show friendly network errors (server down, connection refused, CORS, offline)
+      if (err?.name === "AbortError") {
+        toastError("Request timed out. Please check your network and try again.");
+      } else {
+        toastError("Unable to reach server. Please try again later.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -172,17 +238,19 @@ function Signup({ setLoggedIn }) {
         >
           ×
         </button>
+
         <h2>Sign Up</h2>
 
-        {!!error && <div className="error-banner" role="alert">{error}</div>}
+        {/* Removed inline error-banner; relying on top-right toast instead */}
         {!!success && <div className="success-banner">{success}</div>}
 
         <input
           type="text"
-          placeholder="Name"
+          placeholder="Full Name"
           value={name}
           autoComplete="name"
           onChange={(e) => setName(e.target.value)}
+          disabled={submitting}
         />
 
         <input
@@ -191,6 +259,7 @@ function Signup({ setLoggedIn }) {
           value={username}
           autoComplete="username"
           onChange={(e) => setUsername(e.target.value)}
+          disabled={submitting}
         />
 
         <div className="form-row">
@@ -200,9 +269,10 @@ function Signup({ setLoggedIn }) {
             className="form-select"
             value={role}
             onChange={(e) => setRole(e.target.value)}
+            disabled={submitting}
           >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
+            <option value="User">User</option>
+            <option value="Admin">Admin</option>
           </select>
         </div>
 
@@ -212,6 +282,7 @@ function Signup({ setLoggedIn }) {
           value={email}
           autoComplete="email"
           onChange={(e) => setEmail(e.target.value)}
+          disabled={submitting}
         />
 
         <div className="input-wrapper">
@@ -221,6 +292,7 @@ function Signup({ setLoggedIn }) {
             value={password}
             autoComplete="new-password"
             onChange={(e) => setPassword(e.target.value)}
+            disabled={submitting}
           />
           <span
             className="toggle-visibility"
@@ -238,6 +310,7 @@ function Signup({ setLoggedIn }) {
             value={confirmPassword}
             autoComplete="new-password"
             onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={submitting}
           />
           <span
             className="toggle-visibility"
@@ -257,6 +330,7 @@ function Signup({ setLoggedIn }) {
             placeholder="City of your birth?"
             value={birthCity}
             onChange={(e) => setBirthCity(e.target.value)}
+            disabled={submitting}
           />
         </div>
 
@@ -283,8 +357,6 @@ function Signup({ setLoggedIn }) {
           setShowSignupSuccess(false);
           navigate(from || "/profile", { replace: true });
         }}
-        // secondaryText="Stay here"
-        // onSecondary={() => setShowSignupSuccess(false)}
       />
     </div>
   );

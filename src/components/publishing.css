@@ -126,3 +126,9 @@ input[type="file"] {
   background-color: #63e;
 }
 
+.help-text {
+  color: #666;
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.4;
+}

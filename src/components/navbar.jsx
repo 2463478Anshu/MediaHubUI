@@ -24,12 +24,14 @@ export default function Navbar() {
     navigate("/profile", { state: { from: location.pathname } });
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/search?category=${encodeURIComponent(searchTerm.trim())}`);
-    }
-  };
+  // Navbar.jsx — ONLY the handleSearch changed to use ?q=
+
+const handleSearch = (e) => {
+  e.preventDefault();
+  if (searchTerm.trim()) {
+    navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+  }
+};
 
   return (
     <nav className="nav">
