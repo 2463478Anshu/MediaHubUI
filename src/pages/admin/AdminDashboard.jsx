@@ -106,7 +106,7 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === "growth" && (
-          <GrowthTab fetchGrowth={fetchGrowth} growth={growth} />
+          <GrowthTab fetchGrowth={fetchGrowth} growth={growth} totals={totals} engagement={engagement}/>
         )}
       </main>
     </div>

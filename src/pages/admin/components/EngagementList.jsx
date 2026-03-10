@@ -5,6 +5,20 @@ import { Link } from "react-router-dom";
 export default function EngagementList({ rows, maxLikes, maxComments, maxSubs }) {
   if (!rows?.length) return <p className="empty">No content matches your filters.</p>;
 
+  const getDetailPath = (e) => {
+    if (e?.viewPath) return e.viewPath;
+    const t = (e?.type || e?.contentType || e?.mediaType || e?.kind || "")
+      .toString().trim().toLowerCase();
+
+    const base =
+      t === "video"   ? "/videos"   :
+      t === "article" ? "/articles" :
+      t === "podcast" ? "/podcast"  :
+                        "/videos";
+
+    return `${base}/${e.id}`;
+  };
+
   return (
     <ul className="chart-list">
       {rows.map((e) => (
@@ -18,9 +32,10 @@ export default function EngagementList({ rows, maxLikes, maxComments, maxSubs })
               <span className="dot" />
               <span>Created: {e.createdAt}</span>
               <span className="dot" />
-              <Link className="view-link" to={`/videos/${e.id}`}>View</Link>
+              <Link className="view-link" to={getDetailPath(e)}>View</Link>
             </div>
           </div>
+
           <div className="bars">
             <div className="bar likes" style={{ width: `${(e.likes / maxLikes) * 100}%` }} title={`${e.likes} likes`} />
             <div className="bar comments" style={{ width: `${(e.commentsCount / maxComments) * 100}%` }} title={`${e.commentsCount} comments`} />
@@ -29,5 +44,5 @@ export default function EngagementList({ rows, maxLikes, maxComments, maxSubs })
         </li>
       ))}
     </ul>
-  );
+  );  
 }

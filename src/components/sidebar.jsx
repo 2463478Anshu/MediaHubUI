@@ -8,13 +8,15 @@ import { AiOutlineAudio } from "react-icons/ai";
 import { IoNewspaperOutline } from "react-icons/io5";
 import { PiCrownSimple } from "react-icons/pi";
 import { HiOutlinePlusCircle } from "react-icons/hi2";
-import Logo_nav from '../assets/Logo_nav.png';
+import Logo_nav from "../assets/Logo_nav.png";
 
 export default function Sidebar() {
   const { user } = useContext(UserContext);
 
-  const isAdmin = user?.role === "admin";
-  const isUser = user?.role === "user";
+  // Normalize role to lowercase for consistent checks
+  const role = (user?.role || "").toString().trim().toLowerCase();
+  const isAdmin = role === "admin";
+  const isUser = role === "user";
 
   return (
     <div className="sidebar">
@@ -22,7 +24,7 @@ export default function Sidebar() {
         <li>
           <div className="logo">
             <a href="/" className="logo-link">
-              <img src={Logo_nav} alt="Logo" className="logo-img" />     
+              <img src={Logo_nav} alt="Logo" className="logo-img" />
             </a>
           </div>
         </li>

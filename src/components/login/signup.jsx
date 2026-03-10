@@ -28,6 +28,14 @@ function toJwt(raw) {
   return t.startsWith("Bearer ") ? t.slice(7) : t;
 }
 
+// Normalize role to "User" | "Admin" regardless of server casing
+function normalizeRole(r) {
+  if (!r) return "User";
+  const v = String(r).trim().toLowerCase();
+  if (v === "admin") return "Admin";
+  return "User";
+}
+
 function Signup({ setLoggedIn }) {
   const { setUser, setToken } = useContext(UserContext);
   const navigate = useNavigate();
@@ -187,7 +195,7 @@ function Signup({ setLoggedIn }) {
           name: data.user?.fullName ?? data.User?.FullName ?? name,
           username: data.user?.userName ?? data.User?.UserName ?? username,
           email: data.user?.email ?? data.User?.Email ?? payload.email,
-          role: data.user?.role ?? data.User?.Role ?? role,
+          role: normalizeRole(data.user?.role ?? data.User?.Role ?? role),
           loggedIn: true,
         };
 
