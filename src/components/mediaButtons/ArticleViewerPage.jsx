@@ -120,14 +120,14 @@ export default function ArticleViewerPage() {
   const userIsAdmin = isAdminUser(user);
   const isOwnContent = creatorId && userId && String(userId) === String(creatorId);
 
-  const blockIfAdminOnOwn = (actionLabel) => {
-    if (userIsAdmin && isOwnContent) {
-      setGuardModal({ open: true, action: actionLabel });
-      window.toast?.info?.(`You are an admin and cannot ${actionLabel} on your own content.`);
-      return true;
-    }
-    return false;
-  };
+const blockIfAdminOnOwn = (actionLabel) => {
+  if (userIsAdmin) {
+    setGuardModal({ open: true, action: actionLabel });
+    window.toast?.info?.(`Admins cannot ${actionLabel} on content.`);
+    return true;
+  }
+  return false;
+};
 
   // ------------- Load article + summary + comments -------------
   useEffect(() => {

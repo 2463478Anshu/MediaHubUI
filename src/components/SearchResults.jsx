@@ -1,62 +1,26 @@
 // src/pages/SearchResults.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./SearchResults.css";
+import "./mediaButtons/podcast.css"
 
-// Base URL for the backend
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5275";
 
-/** Small fetch helper with timeout + friendly network errors */
 async function fetchWithTimeout(input, init = {}, ms = 20000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
+
   try {
     const res = await fetch(input, { ...init, signal: controller.signal });
-    const ct = res.headers.get("content-type") || "";
-    const text = await res.text();
-
-    if (!res.ok) {
-      let message = `Request failed (${res.status})`;
-      try {
-        if (ct.includes("application/json") && text) {
-          const pd = JSON.parse(text);
-          message = pd?.detail || pd?.title || pd?.message || message;
-        } else if (text) {
-          message = text;
-        }
-      } catch {
-        if (text) message = text;
-      }
-      throw new Error(message);
-    }
-
-    if (!text) return null;
-    return ct.includes("application/json") ? JSON.parse(text) : text;
+    const data = await res.json();
+    return data;
   } catch (err) {
-    if (err?.name === "AbortError") {
-      throw new Error("Request timed out. Please check your network and try again.");
-    }
-    if (err instanceof TypeError) {
-      throw new Error("Unable to reach server. Please try again later.");
-    }
-    throw err;
+    throw new Error("Search failed.");
   } finally {
     clearTimeout(timer);
   }
 }
 
-/** Optional: duration formatter for podcasts (seconds -> H:MM:SS / M:SS) */
-function formatDuration(totalSeconds) {
-  if (totalSeconds == null || isNaN(Number(totalSeconds))) return null;
-  const t = Number(totalSeconds);
-  const h = Math.floor(t / 3600);
-  const m = Math.floor((t % 3600) / 60);
-  const s = Math.floor(t % 60);
-  const pad = (n) => String(n).padStart(2, "0");
-  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
-}
-
-/** Helper to read extra fields robustly (camelCase first, PascalCase fallback) */
 const getX = (obj, ...keys) => {
   for (const k of keys) {
     if (obj && obj[k] != null) return obj[k];
@@ -64,285 +28,260 @@ const getX = (obj, ...keys) => {
   return undefined;
 };
 
+function formatDuration(sec) {
+  if (!sec) return "";
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function formatDate(iso) {
+  try {
+    const d = new Date(iso);
+    return isNaN(d) ? "" : d.toLocaleString();
+  } catch {
+    return "";
+  }
+}
+
 export default function SearchResults() {
   const location = useLocation();
+  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
 
-  // Full‑text query (title/description/content)
   const q = (params.get("q") || "").trim();
-  // Optional strict category filter (?category=Education|News|...)
   const category = (params.get("category") || "").trim();
 
   const [activeTab, setActiveTab] = useState("Videos");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const [videos, setVideos] = useState([]);     // items where type === "video"
-  const [podcasts, setPodcasts] = useState([]); // items where type === "podcast"
-  const [articles, setArticles] = useState([]); // items where type === "article"
+  const [videos, setVideos] = useState([]);
+  const [podcasts, setPodcasts] = useState([]);
+  const [articles, setArticles] = useState([]);
 
-  // Debounce & abort for smooth UX
-  const DEBOUNCE_MS = 350;
   const debounceTimer = useRef(null);
-  const inFlight = useRef(null);
 
-  // Build server query string
   const queryStr = useMemo(() => {
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
     if (category) sp.set("category", category);
-    sp.set("type", "all");            // search all types; tabs split client-side
-    sp.set("page", "1");
-    sp.set("pageSize", "50");
-    sp.set("sortBy", "createdAt");
-    sp.set("sortDir", "desc");
+    sp.set("type", "all");
     return sp.toString();
   }, [q, category]);
 
   useEffect(() => {
-    if (!q && !category) {
-      setVideos([]); setPodcasts([]); setArticles([]); setError("");
-      return;
-    }
+    if (!q && !category) return;
 
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    setLoading(true);
-    setError("");
 
-    const run = async () => {
-      if (inFlight.current) inFlight.current.abort();
-      const ac = new AbortController();
-      inFlight.current = ac;
+    debounceTimer.current = setTimeout(async () => {
+      setLoading(true);
 
       try {
-        // NOTE: API path is /api/v1/Search (case-insensitive on ASP.NET)
         const data = await fetchWithTimeout(
-          `${API_BASE}/api/v1/Search?${queryStr}`,
-          { method: "GET", signal: ac.signal },
-          20000
+          `${API_BASE}/api/v1/Search?${queryStr}`
         );
 
         const items = Array.isArray(data?.items) ? data.items : [];
-        const v = [], p = [], a = [];
-        for (const it of items) {
+
+        const v = [];
+        const p = [];
+        const a = [];
+
+        items.forEach((it) => {
           if (it.type === "video") v.push(it);
-          else if (it.type === "podcast") p.push(it);
-          else if (it.type === "article") a.push(it);
-        }
+          if (it.type === "podcast") p.push(it);
+          if (it.type === "article") a.push(it);
+        });
+
         setVideos(v);
         setPodcasts(p);
         setArticles(a);
-      } catch (err) {
-        setError(err?.message || "Search failed.");
-        setVideos([]); setPodcasts([]); setArticles([]);
+      } catch {
+        setVideos([]);
+        setPodcasts([]);
+        setArticles([]);
       } finally {
         setLoading(false);
       }
-    };
+    }, 350);
 
-    debounceTimer.current = setTimeout(run, DEBOUNCE_MS);
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      if (inFlight.current) inFlight.current.abort();
-    };
+    return () => clearTimeout(debounceTimer.current);
   }, [q, category, queryStr]);
 
   return (
     <div className="srp">
-      <header className="srp-header">
-        <h1 className="srp-title">
-          Results
-          {q ? <> for: <span className="srp-accent">{q}</span></> : null}
-          {category ? <> &nbsp;in <span className="srp-accent">{category}</span></> : null}
-          {!q && !category ? <span className="srp-accent"> —</span> : null}
-        </h1>
+      <h1 className="page-title">
+        Search Results {q && <>for "{q}"</>}
+      </h1>
 
-        {/* Tabs */}
-        <nav className="srp-tabs" aria-label="Search result types">
-          <button
-            className={`srp-tab ${activeTab === "Videos" ? "active" : ""}`}
-            onClick={() => setActiveTab("Videos")}
-            aria-pressed={activeTab === "Videos"}
-          >
-            Videos
-          </button>
-          <button
-            className={`srp-tab ${activeTab === "Podcasts" ? "active" : ""}`}
-            onClick={() => setActiveTab("Podcasts")}
-            aria-pressed={activeTab === "Podcasts"}
-          >
-            Podcasts
-          </button>
-          <button
-            className={`srp-tab ${activeTab === "Articles" ? "active" : ""}`}
-            onClick={() => setActiveTab("Articles")}
-            aria-pressed={activeTab === "Articles"}
-          >
-            Articles
-          </button>
-        </nav>
-      </header>
+      {!loading && (videos.length > 0 || podcasts.length > 0 || articles.length > 0) && (
+        <p style={{ color: "red", fontWeight: "600" }}>
+          Results found for "{category || q}". Contents are available in Videos, Podcasts or Articles.
+        </p>
+      )}
 
-      {/* States */}
-      {!q && !category ? (
-        <p className="srp-muted">Type in the search bar (min 2 characters) or use a category filter to begin.</p>
-      ) : loading ? (
-        <div className="srp-skeleton-grid">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div className="srp-skeleton-card" key={i}>
-              <div className="srp-skeleton-media" />
-              <div className="srp-skeleton-lines">
-                <div className="sr-line" />
-                <div className="sr-line short" />
-              </div>
-            </div>
-          ))}
+      {/* Tabs */}
+      <div className="srp-tabs">
+        <button
+          onClick={() => setActiveTab("Videos")}
+          style={{
+            backgroundColor: videos.length > 0 ? "#ff4d4f" : "",
+            color: videos.length > 0 ? "white" : ""
+          }}
+        >
+          Videos {videos.length > 0 && `(${videos.length})`}
+        </button>
+
+        <button
+          onClick={() => setActiveTab("Podcasts")}
+          style={{
+            backgroundColor: podcasts.length > 0 ? "#ff4d4f" : "",
+            color: podcasts.length > 0 ? "white" : ""
+          }}
+        >
+          Podcasts {podcasts.length > 0 && `(${podcasts.length})`}
+        </button>
+
+        <button
+          onClick={() => setActiveTab("Articles")}
+          style={{
+            backgroundColor: articles.length > 0 ? "#ff4d4f" : "",
+            color: articles.length > 0 ? "white" : ""
+          }}
+        >
+          Articles {articles.length > 0 && `(${articles.length})`}
+        </button>
+      </div>
+
+      {loading && <p style={{ color: "gray" }}>Searching...</p>}
+
+      {/* ================= VIDEOS ================= */}
+      {activeTab === "Videos" && (
+        <div className="episodes-grid">
+          {videos.map((v) => {
+            const thumb =
+              getX(v?.extra, "thumbnailPath", "ThumbnailPath") ||
+              getX(v?.extra, "coverImagePath", "CoverImagePath");
+
+            const src = thumb ? `${API_BASE}${thumb}` : null;
+
+            return (
+              <article key={v.id} className="episode-card">
+                {v.premium && <span className="premium-badge">Premium</span>}
+
+                {src && (
+                  <img
+                    src={src}
+                    alt={v.title}
+                    className="episode-cover"
+                    onClick={() => navigate(`/videos/${v.id}`)}
+                  />
+                )}
+
+                <div className="episode-content">
+                  <h3>{v.title}</h3>
+
+                  {v.category && (
+                    <p className="episode-meta">Category: {v.category}</p>
+                  )}
+
+                  {v.createdAt && (
+                    <p className="episode-meta">
+                      Uploaded: {formatDate(v.createdAt)}
+                    </p>
+                  )}
+
+                  <button
+                    className="play-btn"
+                    onClick={() => navigate(`/videos/${v.id}`)}
+                  >
+                    Play
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
-      ) : error ? (
-        <div className="srp-empty">{error}</div>
-      ) : (
-        <>
-          {/* ===== Videos ===== */}
-          {activeTab === "Videos" && (
-            <section className="srp-section" aria-label="Videos">
-              {videos.length === 0 ? (
-                <div className="srp-empty">No videos found.</div>
-              ) : (
-                <ul className="srp-grid" role="list">
-                  {videos.map((v) => {
-                    const src =
-                      getX(v?.extra, "filePath", "FilePath") ||
-                      ""; // safe fallback
-                    return (
-                      <li key={v.id} className="video-card" role="listitem">
-                        <Link
-                          to={`/videos/${v.id}`}
-                          className="card-link"
-                          aria-label={`Open video: ${v.title || "Untitled"}`}
-                        >
-                          <div className="video-wrap">
-                            <video
-                              className="video-el"
-                              src={src}
-                              preload="metadata"
-                              controls
-                              playsInline
-                              muted
-                            />
-                          </div>
-                        </Link>
-                        <div className="video-meta">
-                          <div className="video-texts">
-                            <h3 className="card-title">
-                              <Link to={`/videos/${v.id}`} className="title-link">
-                                {v.title || "Untitled"}
-                              </Link>
-                            </h3>
-                            <div className="sub">
-                              {v.category && <span className="category">{v.category}</span>}
-                              {v.premium ? <span className="badge premium">Premium</span> : <span className="badge free">Free</span>}
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </section>
-          )}
+      )}
 
-          {/* ===== Podcasts ===== */}
-          {activeTab === "Podcasts" && (
-            <section className="srp-section" aria-label="Podcasts">
-              {podcasts.length === 0 ? (
-                <div className="srp-empty">No podcasts found.</div>
-              ) : (
-                <ul className="srp-grid" role="list">
-                  {podcasts.map((ep) => {
-                    const cover = getX(ep?.extra, "coverImagePath", "CoverImagePath");
-                    const desc  = getX(ep?.extra, "description", "Description");
-                    const dur   = getX(ep?.extra, "duration", "Duration");
-                    return (
-                      <li key={ep.id} className="pod-card" role="listitem">
-                        {cover && (
-                          <img
-                            className="pod-cover"
-                            src={cover}
-                            alt={`${ep.title || "Podcast"} cover`}
-                            loading="lazy"
-                          />
-                        )}
-                        <div className="pod-body">
-                          <h3 className="card-title">{ep.title || "Untitled"}</h3>
-                          {desc && <p className="desc">{desc}</p>}
-                          <div className="sub">
-                            {dur != null && (
-                              <span className="badge">Duration: {formatDuration(dur)}</span>
-                            )}
-                            {ep.category && <span className="badge">Category: {ep.category}</span>}
-                            {ep.premium ? <span className="badge premium">Premium</span> : <span className="badge free">Free</span>}
-                          </div>
-                          <Link to={`/podcast/${ep.id}`} className="btn">Play</Link>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </section>
-          )}
+      {/* ================= PODCASTS ================= */}
+      {activeTab === "Podcasts" && (
+        <div className="episodes-grid">
+          {podcasts.map((ep) => {
+            const cover = getX(ep?.extra, "coverImagePath", "CoverImagePath");
+            const dur = getX(ep?.extra, "duration", "Duration");
 
-          {/* ===== Articles ===== */}
-          {activeTab === "Articles" && (
-            <section className="srp-section" aria-label="Articles">
-              {articles.length === 0 ? (
-                <div className="srp-empty">No articles found.</div>
-              ) : (
-                <ul className="srp-grid" role="list">
-                  {articles.map((a) => {
-                    const fileName = getX(a?.extra, "fileName", "FileName");
-                    const isText   = !!getX(a?.extra, "content", "Content");
-                    const pdfUrl = fileName ? `${API_BASE}/uploads/articles/${encodeURIComponent(fileName)}` : "";
-                    return (
-                      <li key={a.id} className="art-card" role="listitem">
-                        <div className="art-body">
-                          <h3 className="card-title">{a.title || "Untitled"}</h3>
-                          {a.createdAt && (
-                            <p className="date">
-                              {new Date(a.createdAt).toLocaleString()}
-                            </p>
-                          )}
-                          <div className="sub">
-                            {a.category && <span className="badge">Category: {a.category}</span>}
-                            {a.premium ? <span className="badge premium">Premium</span> : <span className="badge free">Free</span>}
-                          </div>
+            return (
+              <article key={ep.id} className="episode-card">
+                {ep.premium && <span className="premium-badge">Premium</span>}
 
-                          <div className="art-actions">
-                            {pdfUrl ? (
-                              <a
-                                className="view-pdf-btn"
-                                href={pdfUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                Open PDF
-                              </a>
-                            ) : isText ? (
-                              <span className="desc">Text article</span>
-                            ) : (
-                              <span className="desc">No file available</span>
-                            )}
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </section>
-          )}
-        </>
+                {cover && (
+                  <img
+                    src={`${API_BASE}${cover}`}
+                    alt={ep.title}
+                    className="episode-cover"
+                  />
+                )}
+
+                <div className="episode-content">
+                  <h3>{ep.title}</h3>
+
+                  {dur && (
+                    <p className="episode-meta">
+                      Duration: {formatDuration(dur)}
+                    </p>
+                  )}
+
+                  {ep.category && (
+                    <p className="episode-meta">Category: {ep.category}</p>
+                  )}
+
+                  <button
+                    className="play-btn"
+                    onClick={() => navigate(`/podcast/${ep.id}`)}
+                  >
+                    Play
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ================= ARTICLES ================= */}
+      {activeTab === "Articles" && (
+        <div className="episodes-grid">
+          {articles.map((a) => {
+            return (
+              <article key={a.id} className="episode-card">
+                {a.premium && <span className="premium-badge">Premium</span>}
+
+                <div className="episode-content">
+                  <h3>{a.title}</h3>
+
+                  {a.category && (
+                    <p className="episode-meta">Category: {a.category}</p>
+                  )}
+
+                  {a.createdAt && (
+                    <p className="episode-meta">
+                      Uploaded: {formatDate(a.createdAt)}
+                    </p>
+                  )}
+
+                  <button
+                    className="play-btn"
+                    onClick={() => navigate(`/articles/${a.id}`)}
+                  >
+                    Read
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
       )}
     </div>
   );

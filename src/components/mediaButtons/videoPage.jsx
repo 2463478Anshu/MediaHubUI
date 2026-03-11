@@ -135,13 +135,13 @@ export default function VideoPage() {
   const isOwnContent = creatorId && userId && String(userId) === String(creatorId);
 
   const blockIfAdminOnOwn = (actionLabel) => {
-    if (userIsAdmin && isOwnContent) {
-      setGuardModal({ open: true, action: actionLabel });
-      window.toast?.info?.(`You are an admin and cannot ${actionLabel} on your own content.`);
-      return true;
-    }
-    return false;
-  };
+  if (userIsAdmin) {
+    setGuardModal({ open: true, action: actionLabel });
+    window.toast?.info?.(`Admins cannot ${actionLabel} on content.`);
+    return true;
+  }
+  return false;
+};
 
   // Load video + engagement (+ views)
   useEffect(() => {
